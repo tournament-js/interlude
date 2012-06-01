@@ -441,4 +441,4 @@ p.trace = function (fn, fnName) {
   };
 };
 
-module.exports = f;
+module.exports = p;
