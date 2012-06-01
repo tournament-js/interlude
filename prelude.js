@@ -1,40 +1,46 @@
 var slice = Array.prototype.slice;
-var f = {};
+var p = {};
 
 // common
-var id = f.id = function (x) {
+var id = p.id = function (x) {
   return x;
 };
 
-var noop = f.noop = function () {
+var noop = p.noop = function () {
 };
 
-var constant = f.constant = function (val) {
+var constant = p.constant = function (val) {
   return function () {
     return val;
   };
 };
 
 // curried helper functions for common operations
-f.plus = function (x) {
+p.plus = function (x) {
   return function (y) {
     return y + x;
   };
 };
 
-f.times = function (x) {
+p.times = function (x) {
   return function (y) {
     return y * x;
   };
 };
 
-f.append = function (xs) {
+p.append = function (xs) {
   return function (ys) {
     return ys.concat(xs);
   };
 };
 
-f.compose = function (f) {
+p.prepend = function (xs) {
+  return function (ys) {
+    return xs.concat(ys);
+  };
+};
+
+p.compose = function (f) {
   return function (g) {
     return function (x) {
       return f(g(x));
@@ -45,7 +51,7 @@ f.compose = function (f) {
 
 
 // fold - Array::reduce with array curried
-var fold = f.fold = function (f, initial) {
+var fold = p.fold = function (f, initial) {
   return function (xs) {
     return xs.reduce(f, initial);
   };
@@ -82,24 +88,25 @@ var chain = function (f, g) {
 // using fold with binary operators to give lifted functions
 // any of these (i.e. they act on a list) can be remembered by "take the " fnName
 // wheras the variadic counterpart has the name of the associative operator
-f.sum = fold(add, 0);
-f.product = fold(multiply, 1);
-f.flat = fold(concat, []);
-f.composition = fold(chain, id);
+p.sum = fold(add, 0);
+p.product = fold(multiply, 1);
+p.flat = fold(concat, []);
+p.composition = fold(chain, id);
 
 // we could export these
-//f.and = fold(both, true);
-//f.or = fold(either, false);
+//p.and = fold(both, true);
+//p.or = fold(either, false);
 
 // but prefer faster ES5 methods
 // best semantically; "we take the logical" and/or of list
-f.and = function (f) {
+// oh actually, this isn't the same...
+p.and = function (f) {
   return function (xs) {
     return xs.every(f);
   };
 };
 
-f.or = function (f) {
+p.or = function (f) {
   return function (xs) {
     return xs.some(f);
   };
@@ -109,23 +116,23 @@ f.or = function (f) {
 // because some functions are already variadic
 
 // lift a multi param function f into a single array fn, inverse of unlift
-var lift = f.lift = function (f, context) {
+var lift = p.lift = function (fn, context) {
   return function (xs) {
-    return f.apply(context, xs);
+    return fn.apply(context, xs);
   };
 };
 
 // examples
 // follows the "take the" fnName of list semantic
 // max/min already have unlifted variadic counterparts so they can simply be lifted
-var maximum = f.maximum = lift(Math.max, Math);
-var minimum = f.maximum = lift(Math.min, Math);
+var maximum = p.maximum = lift(Math.max, Math);
+var minimum = p.minimum = lift(Math.min, Math);
 
 
 // (new ClassInst) can't be lifted - has to be one manually
 // maybe not want to put this in here, after all Object.create exists
 // and classes are a different thing for people to disagree over
-f.construct = function (Ctor, args) {
+p.construct = function (Ctor, args) {
   var F = function () {
     Ctor.apply(this, args);
   };
@@ -133,24 +140,23 @@ f.construct = function (Ctor, args) {
   return new F();
 };
 
-
 // take a function operating on an array and turn it into a multi-parameter function, inverse of lift
 // because argument based functions are semantic tand is most sensible with zipWith
-var unlift = f.unlift = function (f, context) {
+var unlift = p.unlift = function (fn, context) {
   return function () {
     var args = slice.call(arguments, 0);
-    return f.apply(context, [args]);
+    return fn.apply(context, [args]);
   };
 };
 
 // variadic version of lift functions
 // named after the operation, i.e. "we " fnName (together) "arg1, arg2, ..."
-f.add = unlift(f.sum);
-f.multiply = unlift(f.product);
-f.concat = unlift(f.flatten);
-f.and = unlift(f.all);
-f.or = unlift(f.any);
-f.compose = unlift(f.composition);
+p.add = unlift(p.sum);
+p.multiply = unlift(p.product);
+p.concat = unlift(p.flatten);
+p.and = unlift(p.all);
+p.or = unlift(p.any);
+p.compose = unlift(p.composition);
 
 
 // getters/setters
@@ -158,7 +164,7 @@ f.compose = unlift(f.composition);
 // simple proprety accessor
 // can also be used for array number accessor
 // get :: Int/String -> Property
-f.get = function (prop) {
+p.get = function (prop) {
   return function (el) {
     return el[prop];
   };
@@ -167,7 +173,7 @@ f.get = function (prop) {
 // property get map -- equivalent to _.pluck or map(get('prop'))
 // zip(pmap('length'), [[1,3,2],[2,1]], [[1],[2]], [[2,3],[2,1]]) -> [[3,1,2], [2,1,2]]
 // pmap :: String -> [a] -> [b] -- both curried and as a two param fn
-var pmap = f.pmap = function (propName, ary) {
+var pmap = p.pmap = function (propName, ary) {
   var fn = function (xs) {
     var result = [];
     for (var i = 0; i < xs.length; i += 1) {
@@ -178,7 +184,7 @@ var pmap = f.pmap = function (propName, ary) {
   return (ary == null) ? fn : fn(ary);
 };
 
-f.set = function (propName) {
+p.set = function (propName) {
   return function (el, value) {
     el[propName] = value;
     return el;
@@ -187,7 +193,7 @@ f.set = function (propName) {
 
 // modify a list of objects by setting propName on all objects to valFn(currObj)
 // property set map -- equivalent to map(set('prop'))
-var mmap = f.mmap = function (propName, valFn) {
+var mmap = p.mmap = function (propName, valFn) {
   return function (xs) {
     for (var i = 0; i < xs.length; i += 1) {
       xs[i][propName] = valFn(xs[i]);
@@ -203,7 +209,7 @@ var mmap = f.mmap = function (propName, valFn) {
 // general map/zip helpers
 
 // equivalent to _.range
-f.range = function (start, stop, step) {
+p.range = function (start, stop, step) {
   if (arguments.length <= 1) {
     stop = start || 0;
     start = 0;
@@ -222,7 +228,7 @@ f.range = function (start, stop, step) {
   return range;
 };
 
-f.iterate = function (f, times) {
+p.iterate = function (f, times) {
   return function (x) {
     var result = [x];
     for (var i = 1; i < times; i += 1) {
@@ -240,7 +246,7 @@ f.iterate = function (f, times) {
 // zipper function must have the same number of arguments as there are lists
 // but beyond that, it's very dynamic
 // zipWith(function(x,y,z){return x+y+z;}, [1,3,2], [21,1], [2,3]) -> [24,7]
-f.zipWith = function () {
+p.zipWith = function () {
   var fn = arguments[0]
     , args = slice.call(arguments, 1)
     , numLists = args.length
@@ -258,8 +264,8 @@ f.zipWith = function () {
 };
 
 // zip, zip3, zip4.. all in one!
-f.zip = function () {
-  return f.zipWith.apply(null, [null].concat(slice.call(arguments, 0)));
+p.zip = function () {
+  return p.zipWith.apply(null, [null].concat(slice.call(arguments, 0)));
 };
 
 
@@ -268,7 +274,7 @@ f.zip = function () {
 // sort helper
 // put in property names (in order), you want to order by
 // then pass the resulting function to ary.sort()
-f.comparing = function () {
+p.comparing = function () {
   var pargs = slice.call(arguments, 0);
   return function (x, y) {
     for (var i = 0; i < pargs.length; i += 1) {
@@ -282,38 +288,38 @@ f.comparing = function () {
 
 
 // functional comparison helpers
-f.gt = function (a) {
+p.gt = function (a) {
   return function (b) {
     return b > a;
   };
 };
 
-f.lt = function (a) {
+p.lt = function (a) {
   return function (b) {
     return b < a;
   };
 };
 
-f.eq = function (a) {
+p.eq = function (a) {
   return function (b) {
     return b === a;
   };
 };
 
 // weak eq
-f.weq = function (a) {
+p.weq = function (a) {
   return function (b) {
     return b == a;
   };
 };
 
-f.gte = function (a) {
+p.gte = function (a) {
   return function (b) {
     return b >= a;
   };
 };
 
-f.lte = function (a) {
+p.lte = function (a) {
   return function (b) {
     return b >= a;
   };
@@ -322,13 +328,13 @@ f.lte = function (a) {
 // can do stuff like
 // [1,4,2,5,2,3].filter(gt(3)); -> [4,5]
 
-f.elem = function (ary) {
+p.elem = function (ary) {
   return function (x) {
     return ary.indexOf(x) >= 0;
   };
 };
 
-f.notElem = function (ary) {
+p.notElem = function (ary) {
   return function (x) {
     return ary.indexOf(x) < 0;
   };
@@ -340,7 +346,7 @@ f.notElem = function (ary) {
 // [1,2,3,4,3].filter(notElem[1,3]) -> [2,4]
 
 // nub, nubBy, intersect, intersectBy?
-f.nub = function (ary) {
+p.nub = function (ary) {
   var result = [];
   for (var i = 0; i < ary.length; i += 1) {
     if (ary.indexOf(ary[i], i+1) < 0) {
@@ -351,7 +357,7 @@ f.nub = function (ary) {
 };
 
 
-f.curry = function (fn) {
+p.curry = function (fn) {
   var curried = slice.call(arguments, 1);
   return function () {
     var args = curried.concat(slice.call(arguments, 0));
@@ -360,7 +366,7 @@ f.curry = function (fn) {
 };
 
 // like curry, but curries the last arguments, and creates a function expecting the first
-f.rcurry = function (fn) {
+p.rcurry = function (fn) {
   var curried = slice.call(arguments, 1);
   return function () {
     var args = slice.call(arguments, 0).concat(curried);
@@ -369,8 +375,8 @@ f.rcurry = function (fn) {
 };
 
 // sequence(f1, f2, f3..., fn)(args...) == fn(...(f3(f2(f1(args...)))))
-// f.sequence(f.plus(2), f.plus(3), f.times(2))(2) -> 14
-f.sequence = function () {
+// p.sequence(p.plus(2), p.plus(3), p.times(2))(2) -> 14
+p.sequence = function () {
   var fns = slice.call(arguments, 0)
     , argLen = fns.length;
   return function () {
@@ -385,17 +391,17 @@ f.sequence = function () {
 
 // guard a function by a condition function
 // returns a function that will only apply f(x) if cond(x) is true
-f.guard = function (fn, cond) {
+p.guard = function (fn, cond) {
   return function (x) {
     return (cond(x)) ? fn(x) : null;
   };
 };
 
-// var guardedFibonacci = f.guard(fibonacci, lt(100));
+// var guardedFibonacci = p.guard(fibonacci, lt(100));
 
-// f.either null guard a function, else return errorFn result
+// p.either null guard a function, else return errorFn result
 // if errorFn is a logger, then curry it with the required message
-f.either = function (guardedFn, errorFn) {
+p.either = function (guardedFn, errorFn) {
   return function (x) {
     var result = guardedFn(x);
     return (result === null) ? errorFn() : result;
@@ -403,19 +409,17 @@ f.either = function (guardedFn, errorFn) {
 };
 
 // var errorMsg;
-// var cpuSafeFibonacci = f.either(guardedFibonacci, f.constant(errorMsg));
+// var cpuSafeFibonacci = p.either(guardedFibonacci, p.constant(errorMsg));
 // or
-// var cpuSafeFibonaci = f.either(guardedFibonacci, f.curry(console.log, errorMsg))
+// var cpuSafeFibonaci = p.either(guardedFibonacci, p.curry(console.log, errorMsg))
 
-
-
-f.pow = function (exponent) {
+p.pow = function (exponent) {
   return function (x) {
     return Math.pow(x, exponent);
   };
 };
 
-f.logBase = function (base) {
+p.logBase = function (base) {
   return function (x) {
     return Math.log(x) / Math.log(base);
   };
@@ -423,8 +427,8 @@ f.logBase = function (base) {
 
 
 // debug function, wrap it in a function reporting its scope and arguments
-// particularly useful when combined with f.iterate
-f.trace = function (fn, fnName) {
+// particularly useful when combined with p.iterate
+p.trace = function (fn, fnName) {
   var log = (console) ? console.log : noop
     , global = (function () { return this; }())
     , name = fn.name || fnName || "fn";
