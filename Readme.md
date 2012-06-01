@@ -6,9 +6,10 @@ experience to be great additions to the ES5 reportoire as curried functions.
 Currently, only a preview version is available on npm, but docs, tests, and additions are coming.
 
 ## Usage
+TODO: think of name..
 
 ````javascript
-var f = require('functional');
+var f = require('');
 ````
 
 Read the API (TODO)
@@ -16,7 +17,7 @@ Read the API (TODO)
 ## Installation
 
 ````bash
-$ npm install functional
+$ npm install
 ````
 
 ## License
