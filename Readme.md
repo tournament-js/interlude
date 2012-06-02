@@ -26,12 +26,17 @@ var nested = [[1, 3, 2], [2], [1, 4, 2, 3]];
 $.collect('length', nested); // alternatively: nested.map($.get('length'));
 // [ 3, 1, 4 ]
 
+nested.sort($.comparing('length'));
+// [ [ 2 ], [ 1, 3, 2 ], [ 1, 4, 2, 3 ] ]
+
+
+
 $.zipWith($.add, [1, 1, 1, 1, 1], $.range(1, 5), [1, 0, 0]);
 // [ 3, 3, 4 ]
 
 var f = g = h = function () {};
 $.compose(f, g, h);
-// [Function] : args -> f(g(h(args)))
+// [Function] :: args -> f(g(h(args)))
 
 
 // Powers of two

@@ -2,7 +2,9 @@ var slice = Array.prototype.slice
   , hasOwnProp = Object.prototype.hasOwnProperty
   , $ = {};
 
+// ---------------------------------------------
 // common
+// ---------------------------------------------
 $.id = function (x) {
   return x;
 };
@@ -23,7 +25,47 @@ $.has = function (obj, key) {
   return hasOwnProp.call(obj, key);
 };
 
-// curried helper functions for common operations
+// ---------------------------------------------
+// Math
+// ---------------------------------------------
+
+// lifted versions of the first two exist
+// but they're hard to name sensibly different, and too peripheral
+// lcm = $.lift($.lcm, 1);
+// gcd = $.lift($.gcd, Infinity);
+
+$.gcd = function (a, b) {
+  a = Math.abs(a);
+  b = Math.abs(b);
+  while (b) {
+    var temp = b;
+    b = a % b;
+    a = temp;
+  }
+  return a;
+};
+
+$.lcm = function (a, b) {
+  return (!a || !b) ? 0 : Math.abs((Math.floor(a / $.gcd(a, b)) * b));
+};
+
+$.pow = function (exponent) {
+  return function (x) {
+    return Math.pow(x, exponent);
+  };
+};
+
+// ultimately just as accurate as the internal Math.log approximation
+$.logBase = function (base) {
+  return function (x) {
+    return Math.log(x) / Math.log(base);
+  };
+};
+
+// ---------------------------------------------
+// curried binary operations
+// ---------------------------------------------
+
 $.plus = function (x) {
   return function (y) {
     return y + x;
@@ -60,24 +102,10 @@ $.prepend = function (xs) {
   };
 };
 
-$.compose = function (f) {
-  return function (g) {
-    return function (x) {
-      return f(g(x));
-    };
-  };
-};
+// ---------------------------------------------
+// uncurried binary operators
+// ---------------------------------------------
 
-
-
-// fold - Array::reduce with array curried
-$.fold = function (fn, initial) {
-  return function (xs) {
-    return xs.reduce(fn, initial);
-  };
-};
-
-// binary operators that will be folded over - not exported
 var add = function (x, y) {
   return x + y;
 };
@@ -98,6 +126,32 @@ var either = function (x, y) {
   return x || y;
 };
 
+// ---------------------------------------------
+// scan & fold
+// ---------------------------------------------
+
+// fold - Array::reduce with array curried
+$.fold = function (fn, initial) {
+  return function (xs) {
+    return xs.reduce(fn, initial);
+  };
+};
+
+// like fold, but keeps intermediary steps
+// scan(fn, z)([x1, x2, ...]) == [z, f(z, x1), f(f(z, x1), x2), ...]
+$.scan = function (fn, initial) {
+  return function (xs) {
+    var result = [initial];
+    for (var i = 0; i < xs.length; i += 1) {
+      result.push(fn(result[i], xs[i]));
+    };
+    return result;
+  };
+};
+
+// ---------------------------------------------
+// binary operators folded over lists
+// ---------------------------------------------
 
 // using fold with binary operators to give lifted functions
 // any of these (i.e. they act on a list) can be remembered by "take the " fnName
@@ -108,10 +162,12 @@ $.concatenation = $.fold(concat, []);
 $.and = $.fold(both, true);
 $.or = $.fold(either, false);
 
-// lifts and unlifts:
-// because some functions are already variadic
+// ---------------------------------------------
+// lifts and unlifts
+// ---------------------------------------------
 
-// lift a multi param function f into a single array fn, inverse of unlift
+// multi param function f -> single array fn
+// this is the inverse of unlift
 $.lift = function (fn, context) {
   return function (xs) {
     return fn.apply(context, xs);
@@ -121,6 +177,7 @@ $.lift = function (fn, context) {
 // examples
 // follows the "take the" fnName of list semantic
 // max/min already have unlifted variadic counterparts so they can simply be lifted
+// rather than folding over a two parameter arg
 var maximum = $.maximum = $.lift(Math.max, Math);
 var minimum = $.minimum = $.lift(Math.min, Math);
 
@@ -145,7 +202,7 @@ $.unlift = function (fn, context) {
   };
 };
 
-// variadic version of lift functions
+// variadic version of the lifted functions
 // named after the operation, i.e. "we " fnName (together) "arg1, arg2, ..."
 // variadic => can be used with zipWith for any number of lists
 $.add = $.unlift($.sum);
@@ -153,9 +210,13 @@ $.multiply = $.unlift($.product);
 $.concat = $.unlift($.concatenation);
 $.all = $.unlift($.and);
 $.any = $.unlift($.or);
-$.compose = $.unlift($.composition);
 
-// don't want to fold binary compositions as it's inefficient, so instead:
+// ---------------------------------------------
+// compositions and sequencing
+// ---------------------------------------------
+
+// manually lift/unlift "compose" for efficiency rather than fold/unlift over chain
+// we maintain the lifted/unlifted name semantics of "take the" x || we x
 $.compose = function (/*fns...*/) {
   var fns = arguments;
   return function () {
@@ -167,8 +228,8 @@ $.compose = function (/*fns...*/) {
   };
 };
 
-// sequence(f1, f2, f3..., fn)(args...) == fn(...(f3(f2(f1(args...)))))
 // same as compose, but applies functions in arguments list order
+// sequence(f1, f2, f3..., fn)(args...) == fn(...(f3(f2(f1(args...)))))
 // $.sequence($.plus(2), $.plus(3), $.times(2))(2) -> 14
 $.sequence = function (/*fns...*/) {
   var fns = arguments
@@ -186,48 +247,19 @@ $.sequence = function (/*fns...*/) {
 $.composition = $.lift($.compose);
 $.pipeline = $.lift($.sequence);
 
-
-// scan
-// like fold, but keeps intermediary steps
-// scan(fn, z)([x1, x2, ...]) == [z, f(z, x1), f(f(z, x1), x2), ...]
-$.scan = function (fn, initial) {
-  return function (xs) {
-    var result = [initial];
-    for (var i = 0; i < xs.length; i += 1) {
-      result.push(fn(result[i], xs[i]));
-    };
-    return result;
-  };
-};
-
-// a few number helpers
-$.gcd = function (a, b) {
-  a = Math.abs(a);
-  b = Math.abs(b);
-  while (b) {
-    var temp = b;
-    b = a % b;
-    a = temp;
-  }
-  return a;
-};
-
-$.lcm = function (a, b) {
-  return (!a || !b) ? 0 : Math.abs((Math.floor(a / $.gcd(a, b)) * b));
-};
-
-// getters/setters
+// ---------------------------------------------
+// Getters/setters
+// ---------------------------------------------
 
 // simple proprety accessor
 // can also be used for array number accessor
-// get :: Int/String -> Property
 $.get = function (prop) {
   return function (el) {
     return el[prop];
   };
 };
 
-// property get map -- equivalent to _.pluck or map(get('prop'))
+// property get map -- equivalent to _.pluck or ary.map($.get('prop'))
 // works with both ary curried or included
 // $.collect('length', [ [1,3,2],  [2], [1,2] ]) -> [3,1,2]
 $.collect = function (propName, ary) {
@@ -241,6 +273,9 @@ $.collect = function (propName, ary) {
   return (ary == null) ? fn : fn(ary);
 };
 
+// curried this way so it can be zipped with, i.e.:
+// $.zipWith($.set('prop'), elList, valList);
+// if you wanted to do all three arguments in one, you'd just do a normal assign
 $.set = function (propName) {
   return function (el, value) {
     el[propName] = value;
@@ -248,9 +283,10 @@ $.set = function (propName) {
   };
 };
 
+// property set map -- equivalent to ary.map($.set('prop'))
 // modify a list of objects by setting propName on all objects to valFn(currObj)
-// property set map -- equivalent to map(set('prop'))
-var mmap = $.mmap = function (propName, valFn) {
+// can use $.inject('prop1', $.constant(5))([{}, {a:2}]) -> [{prop1:5}, {a:2, prop1: 5}]|
+$.inject = function (propName, valFn) {
   return function (xs) {
     for (var i = 0; i < xs.length; i += 1) {
       xs[i][propName] = valFn(xs[i]);
@@ -259,14 +295,12 @@ var mmap = $.mmap = function (propName, valFn) {
   };
 };
 
-// can use mmap('prop1', constant(5))([{}, {a:2}]) -> [{prop1:5}, {a:2, prop1: 5}]|
-
-
-
-// general map/zip helpers
+// ---------------------------------------------
+// Loop helpers
+// ---------------------------------------------
 
 // equivalent to _.range
-// make it inclusive?..
+// returns a zero-indexed range
 $.range = function (start, stop, step) {
   if (arguments.length <= 1) {
     stop = start || 0;
@@ -277,6 +311,8 @@ $.range = function (start, stop, step) {
   var len = Math.max(Math.ceil((stop - start) / step), 0)
     , idx = 0
     , range = new Array(len);
+
+  console.log(len, start, stop);
 
   while (idx < len) {
     range[idx++] = start;
@@ -296,20 +332,9 @@ $.iterate = function (times, fn) {
   };
 };
 
-//TODO: throttle, memoize, debounce, once
-//TODO: clone, extend
-
-// Memoize an expensive function by storing its results in a proper hash.
-$.memoize = function (fn, hasher) {
-  var memo = Object.create(null);
-  hasher || (hasher = $.id);
-  return function () {
-    var key = hasher.apply(this, arguments);
-    memo[key] || (memo[key] = fn.apply(this.arguments));
-    return memo[key];
-  };
-};
-
+// ---------------------------------------------
+// zipWith / zip
+// ---------------------------------------------
 
 // can act as zipWith, zipWith3, zipWith4...
 // zipper function must have the same number of arguments as there are lists
@@ -350,8 +375,9 @@ $.zip = function () {
   return results;
 };
 
-
-// comparison
+// ---------------------------------------------
+// ordering
+// ---------------------------------------------
 
 // sort helper
 // put in property names (in order), you want to order by
@@ -407,6 +433,10 @@ $.lte = function (a) {
   };
 };
 
+// ---------------------------------------------
+// Inclusion/exclusion
+// ---------------------------------------------
+
 // can do stuff like
 // [1,4,2,5,2,3].filter(gt(3)); -> [4,5]
 
@@ -427,7 +457,13 @@ $.notElem = function (ary) {
 // [1,2,3,4,3].filter(elem([1,3]))  -> [1,3,3]
 // [1,2,3,4,3].filter(notElem[1,3]) -> [2,4]
 
+// ---------------------------------------------
+// List operations
+// ---------------------------------------------
+
 // intersect, intersectBy?
+// group, groupBy
+// delete, deleteBy
 
 // nub, build up a list of unique (w.r.t. equality)
 // elements by checking if current is not 'equal' to anything in the buildup
@@ -467,6 +503,24 @@ $.nubBy = function (fn, ary) {
   return result;
 };
 
+
+// ---------------------------------------------
+// Function Wrappers
+// ---------------------------------------------
+
+//TODO: throttle, debounce, once
+//TODO: clone, extend
+
+// Memoize an expensive function by storing its results in a proper hash.
+$.memoize = function (fn, hasher) {
+  var memo = Object.create(null);
+  hasher || (hasher = $.id);
+  return function () {
+    var key = hasher.apply(this, arguments);
+    memo[key] || (memo[key] = fn.apply(this.arguments));
+    return memo[key];
+  };
+};
 
 $.curry = function (fn) {
   var curried = slice.call(arguments, 1);
@@ -510,18 +564,6 @@ $.either = function (guardedFn, errorFn) {
 // or
 // var cpuSafeFibonaci = $.either(guardedFibonacci, $.curry(console.log, errorMsg))
 
-$.pow = function (exponent) {
-  return function (x) {
-    return Math.pow(x, exponent);
-  };
-};
-
-$.logBase = function (base) {
-  return function (x) {
-    return Math.log(x) / Math.log(base);
-  };
-};
-
 
 // debug function, wrap it in a function reporting its scope and arguments
 // particularly useful when combined with $.iterate
@@ -538,4 +580,8 @@ $.trace = function (fn, fnName) {
   };
 };
 
+
+// ---------------------------------------------
+// Export
+// ---------------------------------------------
 module.exports = $;
