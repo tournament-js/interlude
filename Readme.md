@@ -46,8 +46,7 @@ var pascalNext = function (row) {
   return $.zipWith($.add2, row.concat(0), [0].concat(row));
 }
 $.iterate(5, pascalNext)([1]);
-// [ [ 1 ],var notCoprime = $.compose($.gt(1), $.gcd);
-$.nubBy(notCoprime, $.range(2, 20));
+// [ [ 1 ]
 //   [ 1, 1 ],
 //   [ 1, 2, 1 ],
 //   [ 1, 3, 3, 1 ],
