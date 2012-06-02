@@ -15,7 +15,6 @@ exports['test#math'] = function () {
   a.equal($.gcd(21, 14), 7, "21 and 14 have 7 as gcd");
   a.equal($.lcm(5, 3), 15, "primes 5 and 3 have lcm as product");
   a.equal($.lcm(21, 14), 42, "21 and 14 have 42 as lcm");
-
   a.equal($.pow(3)(2), 8, "2^3 === 8");
   a.equal($.pow(0)(3), 1, "3^0 === 1");
   a.equal($.pow(2)(4), 16, "4^2 === 16");
@@ -75,6 +74,36 @@ exports["test#lifted functions"] = function () {
   a.equal($.unlift($.lift($.add))(1,2,3,4), 10, "unlift lift add (1,2,3,4)");
   a.equal($.unlift($.sum)(1,2,3,4), 10, "unlift sum (1,2,3,4)");
   a.equal($.lift($.unlift($.sum))([1,2,3,4]), 10, "lift unlift sum [1,2,3,4]");
+};
+
+
+exports["test#composition"] = function () {
+  a.equal($.compose($.times(2), $.plus(5), $.add2)(3,4), 24, "compose 3 fns");
+  a.equal($.sequence($.add2, $.plus(5), $.times(2))(3,4), 24, "compose 3 fns");
+  a.equal($.composition([$.times(2), $.plus(5), $.add2])(3,4), 24, "composition");
+  a.equal($.pipeline([$.add2, $.plus(5), $.times(2)])(3,4), 24, "pipeline");
+};
+
+exports["test#get/set"] = function () {
+  // get
+  a.equal($.get('length')([1,2,3]), 3, "$.get('length')");
+  a.equal($.get('a')({a:2}), 2, "$.get('a')");
+  a.equal($.get(1)([5,7]), 7, "$.get(1)");
+  a.eql([[1],[2],[3]].map($.get(0)), [1,2,3], "ary.map($.get(0))");
+  a.eql($.collect(0, [[1],[2],[3]]), [1,2,3], "$.collect(0, ary))");
+  a.eql($.collect(0) ([[1],[2],[3]]), [1,2,3], "$.collect(0)(ary))");
+  // set
+  var obj = {};
+  $.set('a')(obj, 3);
+  a.equal(obj.a, 3, "$.set simple");
+  var objs = [{}, {a : 2}];
+  $.zipWith($.set('a'), objs, [5,5]);
+  a.equal(objs[0].a, 5, "$.set via zipWith");
+  a.equal(objs[1].a, 5, "$.set via zipWith");
+
+  $.inject('c', $.constant(3))(objs);
+  a.equal(objs[0].c, 3, "$.inject constant 3 on prop 'c'");
+  a.equal(objs[1].c, 3, "$.inject constant 3 on prop 'c'");
 };
 
 

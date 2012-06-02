@@ -1,8 +1,8 @@
 # Interlude ![travis build status](https://secure.travis-ci.org/clux/interlude.png)
 The aim of this module (unlike many similar helper libraries) is not: to replace/alias ES5 methods,
-stuff Array.prototype full of helper methods, or try to avoid using JS semantics for another language's.
-Instead, it exports simple higher order additions to go with the ES5 methods to improve the readibility
-and semantics of common boilerplate code, while maintaining efficiency.
+stuff Array.prototype full of helper methods, nor try to avoid using JS semantics for another language's.
+Instead, it exports higher order additions and curried functions to go with the ES5 arsenal,
+to improve the readibility and semantics of common boilerplate code, while maintaining efficiency.
 
 Currently, only a preview version is available on npm, but docs and additions are coming.
 
@@ -32,7 +32,7 @@ nested.sort($.comparing('length'));
 $.zipWith($.add, [1, 1, 1, 1, 1], $.range(1, 5), [1, 0, 0]);
 // [ 3, 3, 4 ]
 
-var f = g = h = function () {};
+var f = g = h = $.noop;
 $.compose(f, g, h);
 // [Function] :: args -> f(g(h(args)))
 
@@ -43,7 +43,7 @@ $.iterate(8, $.times(2))(2);
 
 // Pascal's Triangle
 var pascalNext = function (row) {
-  return $.zipWith($.add, row.concat(0), [0].concat(row));
+  return $.zipWith($.add2, row.concat(0), [0].concat(row));
 }
 $.iterate(5, pascalNext)([1]);
 // [ [ 1 ],
@@ -73,6 +73,19 @@ Read the API (TODO)
 
 ````bash
 $ npm install interlude
+````
+
+## Running tests
+Install development dependencies
+
+````bash
+$ npm install
+````
+
+Run the tests
+
+````bash
+$ npm test
 ````
 
 ## License
