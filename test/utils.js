@@ -1,6 +1,6 @@
 var a = require('assert')
-  , $ = require('../')
-  , t = require('typr');
+  , t = require('typr')
+  , $ = require('../');
 
 exports['test#common'] = function () {
   a.equal($.id(10, 12), 10, "1-dim identity");
@@ -23,7 +23,21 @@ exports['test#math'] = function () {
   a.equal($.logBase(10)(100), 2, "2 is log10 of 1000");
 };
 
-exports['test#curried_binary_ops'] = function () {
+exports['test#uncurried binary ops'] = function () {
+  a.equal($.add2(3,2), 5, "2+3 === 5");
+  a.equal($.multiply2(3,5), 15, "5*3 === 15");
+  a.equal($.and2(false, false), false, "false && false === false");
+  a.equal($.and2(true, false), false, "true && false === false");
+  a.equal($.and2(false, true), false, "false && true === false");
+  a.equal($.and2(true, true), true, "true && true === true");
+  a.equal($.or2(false, false), false, "false || false === false");
+  a.equal($.or2(true, false), true, "true || false === true");
+  a.equal($.or2(false, true), true, "false || true === true");
+  a.equal($.or2(true, true), true, "true || true === true");
+  a.eql($.concat2([1,2], [3]), [1,2,3], "[1, 2].concat([3]) === [1, 2, 3]");
+};
+
+exports['test#curried binary ops'] = function () {
   a.equal($.plus(3)(2), 5, "2+3 === 5");
   a.equal($.subtract(3)(5), 2, "5-3 === 2");
   a.equal($.times(2)(3), 6, "2*3 === 6");
@@ -31,3 +45,40 @@ exports['test#curried_binary_ops'] = function () {
   a.eql($.append([1,2])([3]), [3,1,2], "(++[1, 2]) [3] === [3, 1, 2]");
   a.eql($.prepend([1,2])([3]), [1,2,3], "([1, 2]++) [3] === [1, 2, 3]");
 };
+
+exports["test#fold & scan"] = function () {
+  a.equal($.fold($.add2, 5)([1,1,1]), 8, "fold add 5 + 1+1+1 === 8");
+  a.eql($.scan($.add2, 5)([1,1,1]), [5,6,7,8],"scan add 5 [1,1,1] === [5,6,7,8]");
+};
+
+exports["test#folded shortcuts"] = function () {
+  a.equal($.sum([1,2,3,4]), 10, "sum [1,2,3,4] === 10");
+  a.equal($.product([1,2,3,4]), 24, "product [1,2,3,4] === 24");
+  a.equal($.and([true, true, false]), false, "and [true, true, false] === false");
+  a.equal($.or([true, false, false]), true, "and [true, false, false] === true");
+  a.eql($.concatenation([[1,2,3],[4],[[5]]]), [1,2,3,4,[5]], "$.concatenation");
+};
+
+exports["test#lifted functions"] = function () {
+  a.equal($.maximum([1,3,2,5,2]), 5, "max [1,3,2,5,2] === 5");
+  a.equal($.minimum([1,3,2,5,2]), 1, "min [1,3,2,5,2] === 1");
+  a.equal($.add(1,2,3,4), 10, "add(1,2,3,4) === 10");
+  a.equal($.multiply(1,2,3,4), 24, "multiply(1,2,3,4) === 24");
+  a.eql($.concat([1,2,3], [4], [[5]]), [1,2,3,4,[5]], "$.concat");
+  a.equal($.all(true, true, true, true), true, "all(true, true, true)");
+  a.equal($.any(false, false, false, false), false, "any(false, false)");
+  a.equal($.all(true, true, true, false), false, "all(1,1,1,0)");
+  a.equal($.any(false, false, true, false), true, "any(0,0,1,0)");
+
+  // lift unlift inverses
+  a.equal($.lift($.add)([1,2,3,4]), 10, "lift add [1,2,3,4] === 10");
+  a.equal($.unlift($.lift($.add))(1,2,3,4), 10, "unlift lift add (1,2,3,4)");
+  a.equal($.unlift($.sum)(1,2,3,4), 10, "unlift sum (1,2,3,4)");
+  a.equal($.lift($.unlift($.sum))([1,2,3,4]), 10, "lift unlift sum [1,2,3,4]");
+};
+
+
+
+
+
+

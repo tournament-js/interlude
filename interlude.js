@@ -106,23 +106,23 @@ $.prepend = function (xs) {
 // uncurried binary operators
 // ---------------------------------------------
 
-var add = function (x, y) {
+$.add2 = function (x, y) {
   return x + y;
 };
 
-var multiply = function (x, y) {
+$.multiply2 = function (x, y) {
   return x * y;
 };
 
-var concat = function (xs, ys) {
+$.concat2 = function (xs, ys) {
   return xs.concat(ys);
 };
 
-var both = function (x, y) {
+$.and2 = function (x, y) {
   return x && y;
 };
 
-var either = function (x, y) {
+$.or2 = function (x, y) {
   return x || y;
 };
 
@@ -130,6 +130,8 @@ var either = function (x, y) {
 // scan & fold
 // ---------------------------------------------
 
+// DO NOT FOLD WITH VARIADIC FUNCTIONS!
+// Instead use binary uncurried operators (also more efficient)
 // fold - Array::reduce with array curried
 $.fold = function (fn, initial) {
   return function (xs) {
@@ -156,11 +158,11 @@ $.scan = function (fn, initial) {
 // using fold with binary operators to give lifted functions
 // any of these (i.e. they act on a list) can be remembered by "take the " fnName
 // wheras the variadic counterpart has the name of the associative operator
-$.sum = $.fold(add, 0);
-$.product = $.fold(multiply, 1);
-$.concatenation = $.fold(concat, []);
-$.and = $.fold(both, true);
-$.or = $.fold(either, false);
+$.sum = $.fold($.add2, 0);
+$.product = $.fold($.multiply2, 1);
+$.concatenation = $.fold($.concat2, []);
+$.and = $.fold($.and2, true);
+$.or = $.fold($.or2, false);
 
 // ---------------------------------------------
 // lifts and unlifts

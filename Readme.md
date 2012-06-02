@@ -1,4 +1,4 @@
-# Functional JavaScript Programming ![travis build status](https://secure.travis-ci.org/clux/interlude.png)
+# Interlude ![travis build status](https://secure.travis-ci.org/clux/interlude.png)
 The aim of this module (unlike many similar helper libraries) is not: to replace/alias ES5 methods,
 stuff Array.prototype full of helper methods, or try to avoid using JS semantics for another language's.
 Instead, it exports simple higher order additions to go with the ES5 methods to improve the readibility
@@ -35,7 +35,6 @@ $.zipWith($.add, [1, 1, 1, 1, 1], $.range(1, 5), [1, 0, 0]);
 var f = g = h = function () {};
 $.compose(f, g, h);
 // [Function] :: args -> f(g(h(args)))
-
 
 // Powers of two
 $.iterate(8, $.times(2))(2);
