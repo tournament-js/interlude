@@ -1,4 +1,4 @@
-# Functional JavaScript Programming
+# Functional JavaScript Programming ![travis build status](https://secure.travis-ci.org/clux/interlude.png)
 The aim of this module (unlike many similar helper libraries) is not: to replace/alias ES5 methods,
 stuff Array.prototype full of helper methods, or try to avoid using JS semantics for another language's.
 Instead, it exports simple higher order additions to go with the ES5 methods to improve the readibility
