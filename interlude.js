@@ -540,13 +540,14 @@ $.insertBy = function (cmp, xs, x) {
   return xs;
 };
 
-// $.partition($.compose($.eq(1), $.get(0)), [[1], [2], [3], [2]])
+// $.partition($.equality(0)([2]), [[1], [2], [3], [2]])
 $.partition = function (fn, xs) {
   return [xs.filter(fn), xs.filter($.compose($.not, fn))];
 };
 
 // what equality means for generalized functions can be created with $.equality
-// might need a curried version of this so it can be called from within intersectBy/groupBy
+// takes what to count as equality first, then x, then y
+// partition takes it curried to up to y, intersect partitioned up to x and y
 $.equality = function () {
   var pargs = slice.call(arguments, 0);
   return function (x) {

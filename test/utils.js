@@ -176,7 +176,10 @@ exports["test#list operations"] = function () {
   a.eql($.intersect([1,2,2,3,4], [6,4,4,2]), [2,2,4], "intersect duplicates");
 
   var res = $.intersectBy($.equality(1), [[1,3],[2,1],[1,4]], [[1,2], [2,4]]);
-  a.eql(res, [1,4], "intersectBy crazy, result is in first list");
+  a.eql(res, [[1,4]], "intersectBy crazy, result is in first list");
+
+  var res = $.partition($.equality(0)([2]), [[1], [2], [3], [2]]);
+  a.eql(res, [ [[2],[2]] , [[1],[3]] ], "partition using $.equality");
 
   a.eql($.nub([1,3,2,4,1,2]), [1,3,2,4], "nub basic");
   a.eql($.nubBy($.eq2, [1,3,2,4,1,2]), [1,3,2,4], "nubBy basic");
