@@ -1,20 +1,21 @@
 # Interlude ![travis build status](https://secure.travis-ci.org/clux/interlude.png)
 Interlude is ES5 JavaScript with Haskell inspired enhancements.
 It's aims to bring common Functional Programming helpers to the
-(already reasonably capable) ES5 arsenal to simplify and abstract common patterns,
+(reasonably capable) ES5 arsenal to simplify and abstract common patterns,
 and allow a more functional style without sacrificing efficiency.
 
 It does not simply alias ES5 methods, and it does not touch prototypes:
-*It curries*.
+
+**It curries**.
 
 ## Usage
-Attach it to your generic free short variable:
+Attach it to the short variable of choice:
 
 ````javascript
 var $ = require('interlude');
 ````
 
-Then add some Functional Programming, JavaScript style;
+Then spice up your JavaScript with Functional Programming;
 
 ```javascript
 [1,3,2,6,5,4].filter($.gt(4));
