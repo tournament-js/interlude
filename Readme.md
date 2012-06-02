@@ -17,32 +17,43 @@ Then add some Functional Programming, JavaScript style;
 
 ```javascript
 [1,3,2,6,5,4].filter($.gt(4));
-// [6,5]
+// [ 6, 5 ]
 
-$.zipWith($.add, [1,1,1,1,1], $.range(1,5), [1,0,0]);
-// [3,3,4]
+$.range(1, 5).map($.pow(2));
+// [ 1, 4, 9, 16 ]
 
-[[1,3,2],[2],[1,4,2,3]].map($.get('length'));
-// [3,1,4]
+var nested = [[1, 3, 2], [2], [1, 4, 2, 3]];
+$.collect('length', nested); // alternatively: nested.map($.get('length'));
+// [ 3, 1, 4 ]
+
+$.zipWith($.add, [1, 1, 1, 1, 1], $.range(1, 5), [1, 0, 0]);
+// [ 3, 3, 4 ]
 
 $.compose(f, g, h);
 // (x) -> f(g(h(x)));
 
-$.iterate($.times(2), 8) (2)
-// [2,4,8,16,32,64,128,256]
+$.iterate(8, $.times(2))(2);
+// [ 2, 4, 8, 16, 32, 64, 128, 256 ]
 
 var pascalNext = function (row) {
-  return $.zipWith($.add, $.concat(row, [0]), $.concat([0], row));
+  return $.zipWith($.add, row.concat(0), [0].concat(row));
 }
-$.iterate(pascalNext, 5)([1]);
-// [
-//      [ 1 ],
-//     [ 1, 1 ],
-//    [ 1, 2, 1 ],
+$.iterate(5, pascalNext)([1]);
+// [ [ 1 ],
+//   [ 1, 1 ],
+//   [ 1, 2, 1 ],
 //   [ 1, 3, 3, 1 ],
-//  [ 1, 4, 6, 4, 1 ]
-// ]
+//   [ 1, 4, 6, 4, 1 ] ]
 
+var fibPairs = $.iterate(10, function (x) {
+  return [x[1], x[0] + x[1]];
+})([0,1]);
+$.collect(0, fibPairs);
+// [ 0, 1, 1, 2, 3, 5, 8, 13 ]
+
+var notCoprime = $.compose($.gt(1), $.gcd);
+$.nubBy(notCoprime, $.range(2, 20));
+// [ 2, 3, 5, 7, 11, 13, 17, 19 ]
 ````
 
 Read the API (TODO)

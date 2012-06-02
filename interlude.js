@@ -98,12 +98,6 @@ var either = function (x, y) {
   return x || y;
 };
 
-var chain = function (f, g) {
-  return function (x) {
-    return f(g(x));
-  };
-};
-
 
 // using fold with binary operators to give lifted functions
 // any of these (i.e. they act on a list) can be remembered by "take the " fnName
@@ -111,7 +105,6 @@ var chain = function (f, g) {
 $.sum = $.fold(add, 0);
 $.product = $.fold(multiply, 1);
 $.concatenation = $.fold(concat, []);
-$.composition = $.fold(chain, $.id); // TODO: this reduces with chain on each call, not very efficient, improve..
 $.and = $.fold(both, true);
 $.or = $.fold(either, false);
 
@@ -162,6 +155,66 @@ $.all = $.unlift($.and);
 $.any = $.unlift($.or);
 $.compose = $.unlift($.composition);
 
+// don't want to fold binary compositions as it's inefficient, so instead:
+$.compose = function (/*fns...*/) {
+  var fns = arguments;
+  return function () {
+    var args = arguments;
+    for (var i = fns.length - 1; i >= 0; i--) {
+      args = [fns[i].apply(this, args)];
+    }
+    return args[0];
+  };
+};
+
+// sequence(f1, f2, f3..., fn)(args...) == fn(...(f3(f2(f1(args...)))))
+// same as compose, but applies functions in arguments list order
+// $.sequence($.plus(2), $.plus(3), $.times(2))(2) -> 14
+$.sequence = function (/*fns...*/) {
+  var fns = arguments
+    , numFns = fns.length;
+  return function () {
+    var args = arguments;
+    for (var i = 0; i < numFns; i++) {
+      args = [fns[i].apply(this, args)];
+    }
+    return args[0];
+  };
+};
+
+// and their list equivalents:
+$.composition = $.lift($.compose);
+$.pipeline = $.lift($.sequence);
+
+
+// scan
+// like fold, but keeps intermediary steps
+// scan(fn, z)([x1, x2, ...]) == [z, f(z, x1), f(f(z, x1), x2), ...]
+$.scan = function (fn, initial) {
+  return function (xs) {
+    var result = [initial];
+    for (var i = 0; i < xs.length; i += 1) {
+      result.push(fn(result[i], xs[i]));
+    };
+    return result;
+  };
+};
+
+// a few number helpers
+$.gcd = function (a, b) {
+  a = Math.abs(a);
+  b = Math.abs(b);
+  while (b) {
+    var temp = b;
+    b = a % b;
+    a = temp;
+  }
+  return a;
+};
+
+$.lcm = function (a, b) {
+  return (!a || !b) ? 0 : Math.abs((Math.floor(a / $.gcd(a, b)) * b));
+};
 
 // getters/setters
 
@@ -213,6 +266,7 @@ var mmap = $.mmap = function (propName, valFn) {
 // general map/zip helpers
 
 // equivalent to _.range
+// make it inclusive?..
 $.range = function (start, stop, step) {
   if (arguments.length <= 1) {
     stop = start || 0;
@@ -232,11 +286,11 @@ $.range = function (start, stop, step) {
   return range;
 };
 
-$.iterate = function (f, times) {
+$.iterate = function (times, fn) {
   return function (x) {
     var result = [x];
     for (var i = 1; i < times; i += 1) {
-      result.push(f(result[i - 1]));
+      result.push(fn(result[i - 1]));
     }
     return result;
   };
@@ -373,30 +427,41 @@ $.notElem = function (ary) {
 // [1,2,3,4,3].filter(elem([1,3]))  -> [1,3,3]
 // [1,2,3,4,3].filter(notElem[1,3]) -> [2,4]
 
-// nub, nubBy, intersect, intersectBy?
+// intersect, intersectBy?
+
+// nub, build up a list of unique (w.r.t. equality)
+// elements by checking if current is not 'equal' to anything in the buildup
+// nubBy curried with function (x, y) { return x == y; } as the equality function is
+// equivalent to nub
 $.nub = function (ary) {
   var result = [];
   for (var i = 0; i < ary.length; i += 1) {
-    if (ary.indexOf(ary[i], i+1) < 0) {
+    if (result.indexOf(ary[i]) < 0) {
       result.push(ary[i]);
     }
   }
   return result;
 };
 
-$.nubBy = function (ary, fn) {
+// nubBy builds up a list of unique (w.r.t. provided equality function) similarly to nub
+$.nubBy = function (fn, ary) {
   var result = []
+    , resLen = 0
     , len = ary.length;
+
   for (var i = 0; i < len; i += 1) {
     var keep = true;
-    for (var j = i + 1; j < len; j += 1) {
-      if (fn(ary[i], ary[j])) {
-        keep = false;
+
+    for (var j = 0; j < resLen; j += 1) {
+      if (fn(ary[j], ary[i])) {
+        var keep = false;
         break;
       }
     }
+
     if (keep) {
       result.push(ary[i]);
+      resLen += 1;
     }
   }
   return result;
@@ -417,20 +482,6 @@ $.rcurry = function (fn) {
   return function () {
     var args = slice.call(arguments, 0).concat(curried);
     return fn.apply(this, args);
-  };
-};
-
-// sequence(f1, f2, f3..., fn)(args...) == fn(...(f3(f2(f1(args...)))))
-// $.sequence($.plus(2), $.plus(3), $.times(2))(2) -> 14
-$.sequence = function () {
-  var fns = slice.call(arguments, 0)
-    , argLen = fns.length;
-  return function () {
-    var result = slice.call(arguments, 0);
-    for (var i = 0; i < argLen; i += 1) {
-      result = [fns[i].apply(this, result)];
-    }
-    return result[0];
   };
 };
 
