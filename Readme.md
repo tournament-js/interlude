@@ -1,10 +1,11 @@
 # Interlude ![travis build status](https://secure.travis-ci.org/clux/interlude.png)
-The aim of this module (unlike many similar helper libraries) is not: to replace/alias ES5 methods,
-stuff Array.prototype full of helper methods, nor try to avoid using JS semantics for another language's.
-Instead, it exports higher order additions and curried functions to go with the ES5 arsenal,
-to improve the readibility and semantics of common boilerplate code, while maintaining efficiency.
+Interlude is ES5 JavaScript with Haskell inspired enhancements.
+It's aims to bring common Functional Programming helpers to the
+(already reasonably capable) ES5 arsenal to simplify and abstract common patterns,
+and allow a more functional style without sacrificing efficiency.
 
-Currently, only a preview version is available on npm, but docs and additions are coming.
+It does not simply alias ES5 methods, and it does not touch prototypes:
+*It curries*.
 
 ## Usage
 Attach it to your generic free short variable:
