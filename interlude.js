@@ -25,6 +25,11 @@ $.has = function (obj, key) {
   return hasOwnProp.call(obj, key);
 };
 
+// can sometimes be useful to compose with
+$.not = function (x) {
+  return !x;
+};
+
 // ---------------------------------------------
 // Math
 // ---------------------------------------------
@@ -110,6 +115,10 @@ $.add2 = function (x, y) {
   return x + y;
 };
 
+$.subtract2 = function (x, y) {
+  return x - y;
+};
+
 $.multiply2 = function (x, y) {
   return x * y;
 };
@@ -124,6 +133,30 @@ $.and2 = function (x, y) {
 
 $.or2 = function (x, y) {
   return x || y;
+};
+
+$.eq2 = function (x, y) {
+  return x === y;
+};
+
+$.weq2 = function (x, y) {
+  return x == y;
+};
+
+$.gt2 = function (x, y) {
+  return x > y;
+};
+
+$.lt2 = function (x, y) {
+  return x < y;
+};
+
+$.gte2 = function (x, y) {
+  return x >= y;
+};
+
+$.lte2 = function (x, y) {
+  return x <= y;
 };
 
 // ---------------------------------------------
@@ -156,7 +189,7 @@ $.scan = function (fn, initial) {
     var result = [initial];
     for (var i = 0; i < xs.length; i += 1) {
       result.push(fn(result[i], xs[i]));
-    };
+    }
     return result;
   };
 };
@@ -180,6 +213,26 @@ $.range = function (start, stop, step) {
   }
   return range;
 };
+
+// any/all are more useful for reverse currying every/some than unlifting and/or
+$.all = function (fn) {
+  return function (xs) {
+    return xs.every(fn);
+  };
+};
+
+$.any = function (fn) {
+  return function (xs) {
+    return xs.some(fn);
+  };
+};
+
+$.none = function (fn) {
+  return function (xs) {
+    return !xs.some(fn);
+  };
+};
+
 
 // ---------------------------------------------
 // binary operators folded over lists
@@ -210,8 +263,17 @@ $.lift = function (fn, context) {
 // follows the "take the" fnName of list semantic
 // max/min already have unlifted variadic counterparts so they can simply be lifted
 // rather than folding over a two parameter arg
-var maximum = $.maximum = $.lift(Math.max, Math);
-var minimum = $.minimum = $.lift(Math.min, Math);
+$.maximum = $.lift(Math.max, Math);
+$.minimum = $.lift(Math.min, Math);
+
+// generalized versions:
+$.maximumBy = function (fn, xs) {
+  return $.maximum(xs.map(fn));
+};
+
+$.minimumBy = function (fn, xs) {
+  return $.minimum(xs.map(fn));
+};
 
 
 // (new ClassInst) can't be lifted - has to be one manually
@@ -240,8 +302,6 @@ $.unlift = function (fn, context) {
 $.add = $.unlift($.sum);
 $.multiply = $.unlift($.product);
 $.concat = $.unlift($.concatenation);
-$.all = $.unlift($.and);
-$.any = $.unlift($.or);
 
 // ---------------------------------------------
 // compositions and sequencing
@@ -253,7 +313,7 @@ $.compose = function (/*fns...*/) {
   var fns = arguments;
   return function () {
     var args = arguments;
-    for (var i = fns.length - 1; i >= 0; i--) {
+    for (var i = fns.length - 1; i >= 0; i -= 1) {
       args = [fns[i].apply(this, args)];
     }
     return args[0];
@@ -268,7 +328,7 @@ $.sequence = function (/*fns...*/) {
     , numFns = fns.length;
   return function () {
     var args = arguments;
-    for (var i = 0; i < numFns; i++) {
+    for (var i = 0; i < numFns; i += 1) {
       args = [fns[i].apply(this, args)];
     }
     return args[0];
@@ -291,18 +351,18 @@ $.get = function (prop) {
   };
 };
 
-// property get map -- equivalent to _.pluck or ary.map($.get('prop'))
-// works with both ary curried or included
+// property get map -- equivalent to _.pluck or xs.map($.get('prop'))
+// works with both xs curried or included
 // $.collect('length', [ [1,3,2],  [2], [1,2] ]) -> [3,1,2]
-$.collect = function (propName, ary) {
-  var fn = function (xs) {
+$.collect = function (propName, xs) {
+  var fn = function (ys) {
     var result = [];
-    for (var i = 0; i < xs.length; i += 1) {
-      result[i] = xs[i][propName];
+    for (var i = 0; i < ys.length; i += 1) {
+      result[i] = ys[i][propName];
     }
     return result;
   };
-  return (ary == null) ? fn : fn(ary);
+  return (xs == null) ? fn : fn(xs);
 };
 
 // curried this way so it can be zipped with, i.e.:
@@ -315,7 +375,7 @@ $.set = function (propName) {
   };
 };
 
-// property set map -- equivalent to ary.map($.set('prop'))
+// property set map -- equivalent to xs.map($.set('prop'))
 // modify a list of objects by setting propName on all objects to valFn(currObj)
 // can use $.inject('prop1', $.constant(5))([{}, {a:2}]) -> [{prop1:5}, {a:2, prop1: 5}]|
 $.inject = function (propName, valFn) {
@@ -340,7 +400,7 @@ $.zipWith = function () {
     , args = slice.call(arguments, 1)
     , numLists = args.length
     , results = []
-    , len = minimum($.collect('length', args));
+    , len = $.minimumBy($.get('length'), args);
 
   for (var i = 0; i < len; i += 1) {
     var els = [];
@@ -358,7 +418,7 @@ $.zip = function () {
   var args = slice.call(arguments, 0)
     , numLists = args.length
     , results = []
-    , len = minimum($.collect('length', args));
+    , len = $.minimumBy($.get('length'), args);
 
   for (var i = 0; i < len; i += 1) {
     var els = [];
@@ -376,7 +436,7 @@ $.zip = function () {
 
 // sort helper
 // put in property names (in order), you want to order by
-// then pass the resulting function to ary.sort()
+// then pass the resulting function to xs.sort()
 $.comparing = function () {
   var pargs = slice.call(arguments, 0);
   return function (x, y) {
@@ -388,7 +448,6 @@ $.comparing = function () {
     }
   };
 };
-
 
 // functional comparison helpers curried to one level
 $.gt = function (a) {
@@ -428,27 +487,27 @@ $.lte = function (a) {
   };
 };
 
-// ---------------------------------------------
-// Inclusion/exclusion
-// ---------------------------------------------
-
 // can do stuff like
 // [1,4,2,5,2,3].filter(gt(3)); -> [4,5]
+// [[1,3,5], [2,3,1]].filter(any(gte(5))) -> [ [ 1, 3, 5 ] ]
 
-$.elem = function (ary) {
+// ---------------------------------------------
+// Membership
+// ---------------------------------------------
+
+$.elem = function (xs) {
   return function (x) {
-    return ary.indexOf(x) >= 0;
+    return xs.indexOf(x) >= 0;
   };
 };
 
-$.notElem = function (ary) {
+$.notElem = function (xs) {
   return function (x) {
-    return ary.indexOf(x) < 0;
+    return xs.indexOf(x) < 0;
   };
 };
 
 // allows stuff like
-// [[1,3,5], [2,3,1]].filter(any(gte(5))) -> [ [ 1, 3, 5 ] ]
 // [1,2,3,4,3].filter(elem([1,3]))  -> [1,3,3]
 // [1,2,3,4,3].filter(notElem[1,3]) -> [2,4]
 
@@ -456,42 +515,119 @@ $.notElem = function (ary) {
 // List operations
 // ---------------------------------------------
 
-// intersect, intersectBy?
-// group, groupBy
-// delete, deleteBy
+// assumes xs sorted, insert x at next step
+// equivalent to $.insertBy($.subtract2, ..)
+$.insert = function (xs, x) {
+  for (var i = xs.length - 1; i >= 0; i -= 1) {
+    if (x >= xs[i]) { // gte(0) . subtract2(x, xs[i])
+      xs.splice(i+1, 0, x);
+      return xs;
+    }
+  }
+  xs.unshift(x);
+  return xs;
+};
+
+// $.insertBy($.comparing(prop)) is good
+$.insertBy = function (cmp, xs, x) {
+  for (var i = xs.length - 1; i >= 0; i -= 1) {
+    if (cmp(x, xs[i]) >= 0) {
+      xs.splice(i+1, 0, x);
+      return xs;
+    }
+  }
+  xs.unshift(x);
+  return xs;
+};
+
+// $.partition($.compose($.eq(1), $.get(0)), [[1], [2], [3], [2]])
+$.partition = function (fn, xs) {
+  return [xs.filter(fn), xs.filter($.compose($.not, fn))];
+};
+
+// what equality means for generalized functions can be created with $.equality
+// might need a curried version of this so it can be called from within intersectBy/groupBy
+$.equality = function () {
+  var pargs = slice.call(arguments, 0);
+  return function (x) {
+    return function (y) {
+      for (var i = 0; i < pargs.length; i += 1) {
+        if (x[pargs[i]] !== y[pargs[i]]) {
+          return false;
+        }
+        return true;
+      }
+    };
+  };
+};
+
+$.intersect = function (xs, ys) {
+  return $.intersectBy($.eq, xs, ys);
+};
+
+$.intersectBy = function (eq, xs, ys) {
+  var result = [];
+  if (xs.length && ys.length) {
+    for (var i = 0; i < xs.length; i += 1) {
+      var x = xs[i];
+      if (ys.filter(eq(x)).length > 0) {
+        result.push(x);
+      }
+    }
+  }
+  return result;
+};
+
+$.group = function (xs) {
+
+};
+
+$.groupBy = function (fn, xs) {
+
+};
+
+$.delete = function (xs) {
+
+};
+
+
+$.deleteBy = function (fn, xs) {
+
+};
+
 
 // nub, build up a list of unique (w.r.t. equality)
 // elements by checking if current is not 'equal' to anything in the buildup
 // nubBy curried with function (x, y) { return x == y; } as the equality function is
 // equivalent to nub
-$.nub = function (ary) {
+$.nub = function (xs) {
   var result = [];
-  for (var i = 0; i < ary.length; i += 1) {
-    if (result.indexOf(ary[i]) < 0) {
-      result.push(ary[i]);
+  for (var i = 0; i < xs.length; i += 1) {
+    if (result.indexOf(xs[i]) < 0) {
+      result.push(xs[i]);
     }
   }
   return result;
 };
 
 // nubBy builds up a list of unique (w.r.t. provided equality function) similarly to nub
-$.nubBy = function (fn, ary) {
+$.nubBy = function (fn, xs) {
   var result = []
     , resLen = 0
-    , len = ary.length;
+    , len = xs.length;
 
   for (var i = 0; i < len; i += 1) {
     var keep = true;
 
     for (var j = 0; j < resLen; j += 1) {
-      if (fn(ary[j], ary[i])) {
-        var keep = false;
+      if (fn(xs[j], xs[i])) {
+        keep = false;
         break;
       }
     }
 
     if (keep) {
-      result.push(ary[i]);
+      result.push(xs[i]);
       resLen += 1;
     }
   }
@@ -563,7 +699,7 @@ $.either = function (guardedFn, errorFn) {
 // debug function, wrap it in a function reporting its scope and arguments
 // particularly useful when combined with $.iterate
 $.trace = function (fn, fnName) {
-  var log = (console) ? console.log : noop
+  var log = (console) ? console.log : $.noop
     , global = (function () { return this; }())
     , name = fn.name || fnName || "fn";
 

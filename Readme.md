@@ -1,10 +1,10 @@
 # Interlude ![travis build status](https://secure.travis-ci.org/clux/interlude.png)
 Interlude is ES5 JavaScript with Haskell inspired enhancements.
-It's aims to bring common Functional Programming helpers to the
-(reasonably capable) ES5 arsenal to simplify and abstract common patterns,
-and allow a more functional style without sacrificing efficiency.
+It's aims to simplify and abstract common patterns by joining
+common higher order functions with the ES5 arsenal to allow a
+more declarative style with negligible efficiency changes.
 
-It does not simply alias ES5 methods, and it does not touch prototypes:
+It does not simply alias ES5 methods, and it does not touch prototypes.
 
 **It curries**.
 
@@ -25,8 +25,11 @@ $.range(5).map($.pow(2));
 // [ 1, 4, 9, 16, 25 ]
 
 var nested = [[1, 3, 2], [2], [1, 4, 2, 3]];
-$.collect('length', nested); // alternatively: nested.map($.get('length'));
+$.collect('length', nested);
 // [ 3, 1, 4 ]
+
+nested.filter($.all($.gt(2)));
+// [ [2] ]
 
 nested.sort($.comparing('length'));
 // [ [ 2 ], [ 1, 3, 2 ], [ 1, 4, 2, 3 ] ]
