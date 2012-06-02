@@ -1,13 +1,13 @@
 {
   "author": "Eirik Albrigtsen <analsandblaster@gmail.com>",
-  "name": "prelude",
+  "name": "interlude",
   "description": "Functional JavaScript library",
   "version": "0.0.2",
   "repository": {
     "type": "git",
-    "url": "git://github.com/clux/prelude.git"
+    "url": "git://github.com/clux/interlude.git"
   },
-  "main": "prelude.js",
+  "main": "interlude.js",
   "engines": {
     "node": ">= 0.6.14"
   },
