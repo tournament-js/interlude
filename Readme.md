@@ -28,7 +28,7 @@ var nested = [[1, 3, 2], [2], [1, 4, 2, 3]];
 $.collect('length', nested);
 // [ 3, 1, 4 ]
 
-nested.filter($.all($.gt(2)));
+nested.filter($.all($.eq(2)));
 // [ [2] ]
 
 nested.sort($.comparing('length'));
