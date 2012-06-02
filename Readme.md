@@ -32,9 +32,13 @@ $.zipWith($.add, [1, 1, 1, 1, 1], $.range(1, 5), [1, 0, 0]);
 $.compose(f, g, h);
 // (x) -> f(g(h(x)));
 
+
+// Powers of two
 $.iterate(8, $.times(2))(2);
 // [ 2, 4, 8, 16, 32, 64, 128, 256 ]
 
+
+// Pascal's Triangle
 var pascalNext = function (row) {
   return $.zipWith($.add, row.concat(0), [0].concat(row));
 }
@@ -45,12 +49,16 @@ $.iterate(5, pascalNext)([1]);
 //   [ 1, 3, 3, 1 ],
 //   [ 1, 4, 6, 4, 1 ] ]
 
-var fibPairs = $.iterate(10, function (x) {
+
+// Fibonacci numbers
+var fibPairs = $.iterate(8, function (x) {
   return [x[1], x[0] + x[1]];
 })([0,1]);
 $.collect(0, fibPairs);
 // [ 0, 1, 1, 2, 3, 5, 8, 13 ]
 
+
+// Prime numbers
 var notCoprime = $.compose($.gt(1), $.gcd);
 $.nubBy(notCoprime, $.range(2, 20));
 // [ 2, 3, 5, 7, 11, 13, 17, 19 ]
