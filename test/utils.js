@@ -1,5 +1,4 @@
 var a = require('assert')
-  , t = require('typr')
   , $ = require('../');
 
 exports['test#common'] = function () {
@@ -45,9 +44,13 @@ exports['test#curried binary ops'] = function () {
   a.eql($.prepend([1,2])([3]), [1,2,3], "([1, 2]++) [3] === [1, 2, 3]");
 };
 
-exports["test#fold & scan"] = function () {
+exports["test#higher order looping"] = function () {
   a.equal($.fold($.add2, 5)([1,1,1]), 8, "fold add 5 + 1+1+1 === 8");
   a.eql($.scan($.add2, 5)([1,1,1]), [5,6,7,8],"scan add 5 [1,1,1] === [5,6,7,8]");
+  a.eql($.iterate(5, $.times(2))(2), [2,4,8,16,32], "iterate (*2)");
+  a.eql($.range(1,5), $.range(5), "range 1 indexed");
+  a.eql($.range(5), [1,2,3,4,5], "range inclusive");
+  a.eql($.range(1,5,2), [1,3,5], "range step inclusive");
 };
 
 exports["test#folded shortcuts"] = function () {
@@ -105,6 +108,42 @@ exports["test#get/set"] = function () {
   a.equal(objs[0].c, 3, "$.inject constant 3 on prop 'c'");
   a.equal(objs[1].c, 3, "$.inject constant 3 on prop 'c'");
 };
+
+exports["test#zipWith/zip"] = function () {
+  a.eql($.zipWith($.add2, [1,3,5], [2,4]), [3, 7], "zipWith add2");
+  a.eql($.zipWith($.add, [1,3,5], [0,0,0], [2,4]), [3, 7], "zipWith add");
+  a.eql($.zip([1,3,5], [2,4]), [[1,2], [3,4]], "zip 2 lists");
+  a.eql($.zip([1,3,5], [0,0,0], [2,4]), [[1,0,2], [3,0,4]], "zip 3 lists");
+};
+
+exports["test#ordering"] = function () {
+  a.equal($.gt(5)(5), false, "5 ! > 5");
+  a.equal($.gt(5)(6), true, "6 > 5");
+  a.equal($.gt(5)(4), false, "4 ! > 5");
+
+  a.equal($.gte(5)(5), true, "5 >= 5");
+  a.equal($.gte(5)(6), true, "6 >= 5");
+  a.equal($.gte(5)(4), false, "4 ! >= 5");
+
+  a.equal($.lt(5)(5), false, "5 ! < 5");
+  a.equal($.lt(5)(6), false, "6 ! < 5");
+  a.equal($.lt(5)(4), true, "4 < 5");
+
+  a.equal($.lte(5)(5), true, "5 <= 5");
+  a.equal($.lte(5)(6), false, "6 ! <= 5");
+  a.equal($.lte(5)(4), true, "4 <= 5");
+
+  a.equal($.eq(5)(5), true, "5 === 5");
+  a.equal($.lt(5)('5'), false, "5 !== '5'");
+
+  a.equal($.weq(5)(5), true, "5 == 5");
+  a.equal($.weq(5)('5'), true, "5 == '5'");
+
+  // compare
+};
+
+
+
 
 
 

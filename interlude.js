@@ -127,8 +127,18 @@ $.or2 = function (x, y) {
 };
 
 // ---------------------------------------------
-// scan & fold
+// Higher order looping
 // ---------------------------------------------
+
+$.iterate = function (times, fn) {
+  return function (x) {
+    var result = [x];
+    for (var i = 1; i < times; i += 1) {
+      result.push(fn(result[i - 1]));
+    }
+    return result;
+  };
+};
 
 // DO NOT FOLD WITH VARIADIC FUNCTIONS!
 // Instead use binary uncurried operators (also more efficient)
@@ -149,6 +159,26 @@ $.scan = function (fn, initial) {
     };
     return result;
   };
+};
+
+// enumerate the first n positive integers
+// like _.range or python's range, but 1-indexed inclusive
+$.range = function (start, stop, step) {
+  if (arguments.length <= 1) {
+    stop = start || 1;
+    start = 1;
+  }
+  step = arguments[2] || 1;
+
+  var len = Math.max(Math.ceil((stop - start + 1) / step), 0)
+    , idx = 0
+    , range = new Array(len);
+
+  while (idx < len) {
+    range[idx++] = start;
+    start += step;
+  }
+  return range;
 };
 
 // ---------------------------------------------
@@ -298,43 +328,6 @@ $.inject = function (propName, valFn) {
 };
 
 // ---------------------------------------------
-// Loop helpers
-// ---------------------------------------------
-
-// equivalent to _.range
-// returns a zero-indexed range
-$.range = function (start, stop, step) {
-  if (arguments.length <= 1) {
-    stop = start || 0;
-    start = 0;
-  }
-  step = arguments[2] || 1;
-
-  var len = Math.max(Math.ceil((stop - start) / step), 0)
-    , idx = 0
-    , range = new Array(len);
-
-  console.log(len, start, stop);
-
-  while (idx < len) {
-    range[idx++] = start;
-    start += step;
-  }
-
-  return range;
-};
-
-$.iterate = function (times, fn) {
-  return function (x) {
-    var result = [x];
-    for (var i = 1; i < times; i += 1) {
-      result.push(fn(result[i - 1]));
-    }
-    return result;
-  };
-};
-
-// ---------------------------------------------
 // zipWith / zip
 // ---------------------------------------------
 
@@ -431,7 +424,7 @@ $.gte = function (a) {
 
 $.lte = function (a) {
   return function (b) {
-    return b >= a;
+    return b <= a;
   };
 };
 

@@ -19,8 +19,8 @@ Then add some Functional Programming, JavaScript style;
 [1,3,2,6,5,4].filter($.gt(4));
 // [ 6, 5 ]
 
-$.range(1, 5).map($.pow(2));
-// [ 1, 4, 9, 16 ]
+$.range(5).map($.pow(2));
+// [ 1, 4, 9, 16, 25 ]
 
 var nested = [[1, 3, 2], [2], [1, 4, 2, 3]];
 $.collect('length', nested); // alternatively: nested.map($.get('length'));
@@ -29,7 +29,7 @@ $.collect('length', nested); // alternatively: nested.map($.get('length'));
 nested.sort($.comparing('length'));
 // [ [ 2 ], [ 1, 3, 2 ], [ 1, 4, 2, 3 ] ]
 
-$.zipWith($.add, [1, 1, 1, 1, 1], $.range(1, 5), [1, 0, 0]);
+$.zipWith($.add, [1, 1, 1, 1, 1], $.range(5), [1, 0, 0]);
 // [ 3, 3, 4 ]
 
 var f = g = h = $.noop;
@@ -46,7 +46,8 @@ var pascalNext = function (row) {
   return $.zipWith($.add2, row.concat(0), [0].concat(row));
 }
 $.iterate(5, pascalNext)([1]);
-// [ [ 1 ],
+// [ [ 1 ],var notCoprime = $.compose($.gt(1), $.gcd);
+$.nubBy(notCoprime, $.range(2, 20));
 //   [ 1, 1 ],
 //   [ 1, 2, 1 ],
 //   [ 1, 3, 3, 1 ],
