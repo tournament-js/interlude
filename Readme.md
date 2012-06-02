@@ -19,7 +19,7 @@ Then add some Functional Programming, JavaScript style;
 [1,3,2,6,5,4].filter($.gt(4));
 // [6,5]
 
-$.zipWith($.add, $.range(1,5), [1,1,1,1,1], [1,0,0]);
+$.zipWith($.add, [1,1,1,1,1], $.range(1,5), [1,0,0]);
 // [3,3,4]
 
 [[1,3,2],[2],[1,4,2,3]].map($.get('length'));
@@ -30,6 +30,19 @@ $.compose(f, g, h);
 
 $.iterate($.times(2), 8) (2)
 // [2,4,8,16,32,64,128,256]
+
+var pascalNext = function (row) {
+  return $.zipWith($.add, $.concat(row, [0]), $.concat([0], row));
+}
+$.iterate(pascalNext, 5)([1]);
+// [
+//      [ 1 ],
+//     [ 1, 1 ],
+//    [ 1, 2, 1 ],
+//   [ 1, 3, 3, 1 ],
+//  [ 1, 4, 6, 4, 1 ]
+// ]
+
 ````
 
 Read the API (TODO)

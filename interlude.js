@@ -16,6 +16,9 @@ $.constant = function (val) {
   };
 };
 
+// if using object as a hash, use this for security
+// but preferably set hash = Object.create(null)
+// and simply test for !!hash[key]
 $.has = function (obj, key) {
   return hasOwnProp.call(obj, key);
 };
@@ -68,9 +71,9 @@ $.compose = function (f) {
 
 
 // fold - Array::reduce with array curried
-$.fold = function (f, initial) {
+$.fold = function (fn, initial) {
   return function (xs) {
-    return xs.reduce(f, initial);
+    return xs.reduce(fn, initial);
   };
 };
 
@@ -108,7 +111,7 @@ var chain = function (f, g) {
 $.sum = $.fold(add, 0);
 $.product = $.fold(multiply, 1);
 $.concatenation = $.fold(concat, []);
-$.composition = $.fold(chain, $.id);
+$.composition = $.fold(chain, $.id); // TODO: this reduces with chain on each call, not very efficient, improve..
 $.and = $.fold(both, true);
 $.or = $.fold(either, false);
 
@@ -172,9 +175,9 @@ $.get = function (prop) {
 };
 
 // property get map -- equivalent to _.pluck or map(get('prop'))
-// zip(pmap('length'), [[1,3,2],[2,1]], [[1],[2]], [[2,3],[2,1]]) -> [[3,1,2], [2,1,2]]
-// pmap :: String -> [a] -> [b] -- both curried and as a two param fn
-var pmap = $.pmap = function (propName, ary) {
+// works with both ary curried or included
+// $.collect('length', [ [1,3,2],  [2], [1,2] ]) -> [3,1,2]
+$.collect = function (propName, ary) {
   var fn = function (xs) {
     var result = [];
     for (var i = 0; i < xs.length; i += 1) {
@@ -239,7 +242,6 @@ $.iterate = function (f, times) {
   };
 };
 
-
 //TODO: throttle, memoize, debounce, once
 //TODO: clone, extend
 
@@ -264,7 +266,7 @@ $.zipWith = function () {
     , args = slice.call(arguments, 1)
     , numLists = args.length
     , results = []
-    , len = minimum(pmap('length', args));
+    , len = minimum($.collect('length', args));
 
   for (var i = 0; i < len; i += 1) {
     var els = [];
@@ -282,7 +284,7 @@ $.zip = function () {
   var args = slice.call(arguments, 0)
     , numLists = args.length
     , results = []
-    , len = minimum(pmap('length', args));
+    , len = minimum($.collect('length', args));
 
   for (var i = 0; i < len; i += 1) {
     var els = [];
