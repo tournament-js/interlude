@@ -29,8 +29,9 @@ $.collect('length', nested); // alternatively: nested.map($.get('length'));
 $.zipWith($.add, [1, 1, 1, 1, 1], $.range(1, 5), [1, 0, 0]);
 // [ 3, 3, 4 ]
 
+var f = g = h = function () {};
 $.compose(f, g, h);
-// (x) -> f(g(h(x)));
+// [Function] : args -> f(g(h(args)))
 
 
 // Powers of two
