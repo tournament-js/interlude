@@ -4,7 +4,7 @@ stuff Array.prototype full of helper methods, or try to avoid using JS semantics
 Instead, it exports simple higher order additions to go with the ES5 methods to improve the readibility
 and semantics of common boilerplate code, while maintaining efficiency.
 
-Currently, only a preview version is available on npm, but docs, tests, and additions are coming.
+Currently, only a preview version is available on npm, but docs and additions are coming.
 
 ## Usage
 Attach it to your generic free short variable:
@@ -28,8 +28,6 @@ $.collect('length', nested); // alternatively: nested.map($.get('length'));
 
 nested.sort($.comparing('length'));
 // [ [ 2 ], [ 1, 3, 2 ], [ 1, 4, 2, 3 ] ]
-
-
 
 $.zipWith($.add, [1, 1, 1, 1, 1], $.range(1, 5), [1, 0, 0]);
 // [ 3, 3, 4 ]
