@@ -90,7 +90,7 @@ $.times = function (x) {
 };
 
 $.divide = function (x) {
-  return function (y){
+  return function (y) {
     return y / x;
   };
 };
@@ -511,130 +511,6 @@ $.notElem = function (xs) {
 // [1,2,3,4,3].filter(elem([1,3]))  -> [1,3,3]
 // [1,2,3,4,3].filter(notElem[1,3]) -> [2,4]
 
-// ---------------------------------------------
-// List operations
-// ---------------------------------------------
-
-// assumes xs sorted, insert x at next step
-// equivalent to $.insertBy($.subtract2, ..)
-$.insert = function (xs, x) {
-  for (var i = xs.length - 1; i >= 0; i -= 1) {
-    if (x >= xs[i]) { // gte(0) . subtract2(x, xs[i])
-      xs.splice(i+1, 0, x);
-      return xs;
-    }
-  }
-  xs.unshift(x);
-  return xs;
-};
-
-// $.insertBy($.comparing(prop)) is good
-$.insertBy = function (cmp, xs, x) {
-  for (var i = xs.length - 1; i >= 0; i -= 1) {
-    if (cmp(x, xs[i]) >= 0) {
-      xs.splice(i+1, 0, x);
-      return xs;
-    }
-  }
-  xs.unshift(x);
-  return xs;
-};
-
-// $.partition($.equality(0)([2]), [[1], [2], [3], [2]])
-$.partition = function (fn, xs) {
-  return [xs.filter(fn), xs.filter($.compose($.not, fn))];
-};
-
-// what equality means for generalized functions can be created with $.equality
-// takes what to count as equality first, then x, then y
-// partition takes it curried to up to y, intersect partitioned up to x and y
-$.equality = function () {
-  var pargs = slice.call(arguments, 0);
-  return function (x) {
-    return function (y) {
-      for (var i = 0; i < pargs.length; i += 1) {
-        if (x[pargs[i]] !== y[pargs[i]]) {
-          return false;
-        }
-        return true;
-      }
-    };
-  };
-};
-
-$.intersect = function (xs, ys) {
-  return $.intersectBy($.eq, xs, ys);
-};
-
-$.intersectBy = function (eq, xs, ys) {
-  var result = [];
-  if (xs.length && ys.length) {
-    for (var i = 0; i < xs.length; i += 1) {
-      var x = xs[i];
-      if (ys.filter(eq(x)).length > 0) {
-        result.push(x);
-      }
-    }
-  }
-  return result;
-};
-
-$.group = function (xs) {
-
-};
-
-$.groupBy = function (fn, xs) {
-
-};
-
-$.delete = function (xs) {
-
-};
-
-
-$.deleteBy = function (fn, xs) {
-
-};
-
-
-// nub, build up a list of unique (w.r.t. equality)
-// elements by checking if current is not 'equal' to anything in the buildup
-// nubBy curried with function (x, y) { return x == y; } as the equality function is
-// equivalent to nub
-$.nub = function (xs) {
-  var result = [];
-  for (var i = 0; i < xs.length; i += 1) {
-    if (result.indexOf(xs[i]) < 0) {
-      result.push(xs[i]);
-    }
-  }
-  return result;
-};
-
-// nubBy builds up a list of unique (w.r.t. provided equality function) similarly to nub
-$.nubBy = function (fn, xs) {
-  var result = []
-    , resLen = 0
-    , len = xs.length;
-
-  for (var i = 0; i < len; i += 1) {
-    var keep = true;
-
-    for (var j = 0; j < resLen; j += 1) {
-      if (fn(xs[j], xs[i])) {
-        keep = false;
-        break;
-      }
-    }
-
-    if (keep) {
-      result.push(xs[i]);
-      resLen += 1;
-    }
-  }
-  return result;
-};
-
 
 // ---------------------------------------------
 // Function Wrappers
@@ -712,6 +588,158 @@ $.trace = function (fn, fnName) {
   };
 };
 
+
+// ---------------------------------------------
+// List operations
+// ---------------------------------------------
+
+// assumes xs sorted, insert x at next step
+// equivalent to $.insertBy($.subtract2, ..)
+$.insert = function (xs, x) {
+  for (var i = xs.length - 1; i >= 0; i -= 1) {
+    if (x >= xs[i]) { // gte(0) . subtract2(x, xs[i])
+      xs.splice(i + 1, 0, x);
+      return xs;
+    }
+  }
+  xs.unshift(x);
+  return xs;
+};
+
+// $.insertBy($.comparing(prop)) is good
+$.insertBy = function (cmp, xs, x) {
+  for (var i = xs.length - 1; i >= 0; i -= 1) {
+    if (cmp(x, xs[i]) >= 0) {
+      xs.splice(i + 1, 0, x);
+      return xs;
+    }
+  }
+  xs.unshift(x);
+  return xs;
+};
+
+// $.partition($.equality(0)([2]), [[1], [2], [3], [2]])
+$.partition = function (fn, xs) {
+  return [xs.filter(fn), xs.filter($.compose($.not, fn))];
+};
+
+// what equality means for generalized functions can be created with $.equality
+// takes what to count as equality first, then x, then y
+// partition takes it curried to up to y, intersect partitioned up to x and y
+// can make custom equality functions that does not simply get one property by:
+// $.compose($.eq, $.get(0)) and replacing $.get with a function of choice
+$.equality = function () {
+  var pargs = slice.call(arguments, 0);
+  return function (x, z) {
+    var fn = function (y) {
+      for (var i = 0; i < pargs.length; i += 1) {
+        if (x[pargs[i]] !== y[pargs[i]]) {
+          return false;
+        }
+        return true;
+      }
+    };
+    return (z == null) ? fn : fn(z); // allow currying to one level!
+  };
+};
+
+// only function that needs double curried $.equality, but it's fine.
+$.intersectBy = function (eq, xs, ys) {
+  var result = [];
+  if (xs.length && ys.length) {
+    for (var i = 0; i < xs.length; i += 1) {
+      var x = xs[i];
+      if (ys.filter(eq(x)).length > 0) {
+        result.push(x);
+      }
+    }
+  }
+  return result;
+};
+
+$.intersect = function (xs, ys) {
+  return $.intersectBy($.eq, xs, ys);
+};
+
+// nub, build up a list of unique (w.r.t. equality)
+// elements by checking if current is not 'equal' to anything in the buildup
+// $.curry($.nubBy, $.eq) === $.nub
+$.nub = function (xs) {
+  var result = [];
+  for (var i = 0; i < xs.length; i += 1) {
+    if (result.indexOf(xs[i]) < 0) {
+      result.push(xs[i]);
+    }
+  }
+  return result;
+};
+
+// nubBy builds up a list of unique (w.r.t. provided equality function) similarly to nub
+// this can also take the curried $.equality now because of it's looseness
+$.nubBy = function (eq, xs) {
+  var result = []
+    , resLen = 0
+    , len = xs.length;
+
+  for (var i = 0; i < len; i += 1) {
+    var keep = true;
+
+    for (var j = 0; j < resLen; j += 1) {
+      if (eq(xs[j], xs[i])) {
+        keep = false;
+        break;
+      }
+    }
+
+    if (keep) {
+      result.push(xs[i]);
+      resLen += 1;
+    }
+  }
+  return result;
+};
+
+$.group = function (xs) {
+  return $.groupBy($.eq2, xs);
+};
+
+$.groupBy = function (eq, xs) {
+  var result = []
+    , j, sub;
+  for (var i = 0; i < xs.length; i = j) {
+    sub = [xs[i]];
+    for (j = i + 1; j < xs.length && eq(xs[i], xs[j]); j += 1) {
+      sub.push(xs[j]);
+    }
+    result.push(sub);
+  }
+  return result;
+};
+
+// deletes everything the equality test finds equal to x
+$.deleteBy = function (eq, xs, x) {
+  var result = [];
+  if (xs.length) {
+    for (var i = 0; i < xs.length; i += 1) {
+      if (!eq(x, xs[i])) {
+        result.push(xs[i]);
+      }
+    }
+  }
+  return result;
+};
+
+$.delete = function (xs, x) {
+  return $.deleteBy($.eq2, xs, x);
+};
+
+$.unionBy = function (eq, xs, ys) {
+  return xs.concat($.fold($.curry($.deleteBy, eq), $.nubBy(eq, ys))(xs));
+};
+
+$.union = function (xs, ys) {
+  return $.unionBy($.eq2, xs, ys);
+};
 
 // ---------------------------------------------
 // Export

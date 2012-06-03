@@ -5,8 +5,7 @@ common higher order functions with the ES5 arsenal to allow a
 more declarative style with negligible efficiency changes.
 
 It does not simply alias ES5 methods, and it does not touch prototypes.
-
-**It curries**.
+*It curries*.
 
 ## Usage
 Attach it to the short variable of choice:

@@ -181,13 +181,34 @@ exports["test#list operations"] = function () {
   var res = $.partition($.equality(0)([2]), [[1], [2], [3], [2]]);
   a.eql(res, [ [[2],[2]] , [[1],[3]] ], "partition using $.equality");
 
+  var res = $.deleteBy($.equality(1), [[1,3],[2,1],[1,4]], [5,1]);
+  a.eql(res, [[1,3], [1,4]], "delete by equality(1)");
+  a.eql($.delete($.range(5), 5), $.range(4), "delete from range");
+  a.eql($.delete($.range(3), 2), [1,3], "delete from small range");
+
+  a.eql($.nub([2,3,7,5]), [2,3,7,5], "nub on unique");
+  a.eql($.nubBy($.eq2, [2,3,7,5]), [2,3,7,5], "nub on unique");
   a.eql($.nub([1,3,2,4,1,2]), [1,3,2,4], "nub basic");
   a.eql($.nubBy($.eq2, [1,3,2,4,1,2]), [1,3,2,4], "nubBy basic");
+
   a.eql($.nub([1,1,1,1]), [1], "nub ones basic");
   a.eql($.nubBy($.eq2, [1,1,1,1]), [1], "nubBy ones basic");
 
+  var res = $.nubBy($.equality(1), [[1,3],[5,2],[2,3],[2,2]]);
+  a.eql(res, [[1,3],[5,2]], "nubBy equality on 1");
+
   var notCoprime = $.compose($.gt(1), $.gcd);
   a.eql($.nubBy(notCoprime, $.range(2, 11)), [2,3,5,7,11], "primes nubBy");
+
+  a.eql($.union([1,3,2,4], [2,3,7,5]), [1,3,2,4,7,5], "union");
+  a.equal($.nub("hitherehandsome").join(''), 'hiterandsom', "can nub strings");
+  a.equal($.delete("hitherehandsome", 'h').join(''), 'itereandsome', "delete strs");
+
+  a.eql($.group([1,3,3,2,4,4]), [[1],[3,3],[2],[4,4]], "basic group");
+  a.eql($.group([1,1,1,1]), [[1,1,1,1]], "basic group ones");
+
+  var res = $.groupBy($.equality(1), [[1,3],[2,1],[4,1],[2,3]]);
+  a.eql(res, [ [[1,3]], [[2,1],[4,1]], [[2,3]] ], "groupBy equality on 1");
 
 };
 
