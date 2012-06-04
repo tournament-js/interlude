@@ -170,18 +170,20 @@ exports["test#membership"] = function () {
 };
 
 exports["test#list operations"] = function () {
-  var eq = $.equality('length');
+  var eq = $.equality2('length');
 
   a.eql($.intersect([1,2,3,4], [2,4,6,8]), [2,4], "intersect basic");
   a.eql($.intersect([1,2,2,3,4], [6,4,4,2]), [2,2,4], "intersect duplicates");
 
-  var res = $.intersectBy($.equality(1), [[1,3],[2,1],[1,4]], [[1,2], [2,4]]);
+  var res = $.intersectBy($.equality2(1), [[1,3],[2,1],[1,4]], [[1,2], [2,4]]);
   a.eql(res, [[1,4]], "intersectBy crazy, result is in first list");
 
-  var res = $.partition($.equality(0)([2]), [[1], [2], [3], [2]]);
-  a.eql(res, [ [[2],[2]] , [[1],[3]] ], "partition using $.equality");
+  //var res = $.partition($.equality(0)([2]), [[1], [2], [3], [2]]);
+  //a.eql(res, [ [[2],[2]] , [[1],[3]] ], "partition using $.equality");
+  a.eql($.partition($.eq(2), [1,3,2,1,2]), [[2,2], [1,3,1]], "partition basic");
 
-  var res = $.deleteBy($.equality(1), [[1,3],[2,1],[1,4]], [5,1]);
+
+  var res = $.deleteBy($.equality2(1), [[1,3],[2,1],[1,4]], [5,1]);
   a.eql(res, [[1,3], [1,4]], "delete by equality(1)");
   a.eql($.delete($.range(5), 5), $.range(4), "delete from range");
   a.eql($.delete($.range(3), 2), [1,3], "delete from small range");
@@ -194,20 +196,27 @@ exports["test#list operations"] = function () {
   a.eql($.nub([1,1,1,1]), [1], "nub ones basic");
   a.eql($.nubBy($.eq2, [1,1,1,1]), [1], "nubBy ones basic");
 
-  var res = $.nubBy($.equality(1), [[1,3],[5,2],[2,3],[2,2]]);
+  var res = $.nubBy($.equality2(1), [[1,3],[5,2],[2,3],[2,2]]);
   a.eql(res, [[1,3],[5,2]], "nubBy equality on 1");
 
   var notCoprime = $.compose($.gt(1), $.gcd);
   a.eql($.nubBy(notCoprime, $.range(2, 11)), [2,3,5,7,11], "primes nubBy");
 
   a.eql($.union([1,3,2,4], [2,3,7,5]), [1,3,2,4,7,5], "union");
+  var res = $.collect(1, $.unionBy($.equality2(1)
+    , [[0,1],[0,3],[0,2],[0,4]]
+    , [[0,2],[0,3],[0,7],[0,5]]
+  ));
+  a.eql(res, [1,3,2,4,7,5], "unionBy eq(1) works equally well");
+
+
   a.equal($.nub("hitherehandsome").join(''), 'hiterandsom', "can nub strings");
   a.equal($.delete("hitherehandsome", 'h').join(''), 'itereandsome', "delete strs");
 
   a.eql($.group([1,3,3,2,4,4]), [[1],[3,3],[2],[4,4]], "basic group");
   a.eql($.group([1,1,1,1]), [[1,1,1,1]], "basic group ones");
 
-  var res = $.groupBy($.equality(1), [[1,3],[2,1],[4,1],[2,3]]);
+  var res = $.groupBy($.equality2(1), [[1,3],[2,1],[4,1],[2,3]]);
   a.eql(res, [ [[1,3]], [[2,1],[4,1]], [[2,3]] ], "groupBy equality on 1");
 
 };

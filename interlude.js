@@ -60,7 +60,7 @@ $.pow = function (exponent) {
   };
 };
 
-// ultimately just as accurate as the internal Math.log approximation
+// ultimately only as accurate as the internal Math.log approximation
 $.logBase = function (base) {
   return function (x) {
     return Math.log(x) / Math.log(base);
@@ -413,7 +413,7 @@ $.zipWith = function () {
 };
 
 // zip, zip3, zip4.. all in one!
-// inlining faster: http://jsperf.com/inlinezip3
+// inlining quite a bit faster: http://jsperf.com/inlinezip3
 $.zip = function () {
   var args = slice.call(arguments, 0)
     , numLists = args.length
@@ -577,13 +577,11 @@ $.either = function (guardedFn, errorFn) {
 // particularly useful when combined with $.iterate
 $.trace = function (fn, fnName) {
   var log = (console) ? console.log : $.noop
-    , global = (function () { return this; }())
     , name = fn.name || fnName || "fn";
 
   return function () {
     var result = fn.apply(this, arguments);
-    var scope = (this === global) ? "global" : this;
-    log('[', name + '.apply(', scope, ',', slice.call(arguments, 0), ') -> ', result, ']');
+    log('[', name + '(', slice.call(arguments, 0).join(', '), ') -> ', result, ']');
     return result;
   };
 };
@@ -628,10 +626,23 @@ $.partition = function (fn, xs) {
 // partition takes it curried to up to y, intersect partitioned up to x and y
 // can make custom equality functions that does not simply get one property by:
 // $.compose($.eq, $.get(0)) and replacing $.get with a function of choice
+$.equality2 = function () {
+  var pargs = slice.call(arguments, 0);
+  return function (x, y) {
+    for (var i = 0; i < pargs.length; i += 1) {
+      if (x[pargs[i]] !== y[pargs[i]]) {
+        return false;
+      }
+      return true;
+    }
+  };
+};
+
+// double curried version of $.equality2 to use in filters and $.partition
 $.equality = function () {
   var pargs = slice.call(arguments, 0);
-  return function (x, z) {
-    var fn = function (y) {
+  return function (x) {
+    return function (y) {
       for (var i = 0; i < pargs.length; i += 1) {
         if (x[pargs[i]] !== y[pargs[i]]) {
           return false;
@@ -639,18 +650,20 @@ $.equality = function () {
         return true;
       }
     };
-    return (z == null) ? fn : fn(z); // allow currying to one level!
   };
 };
 
-// only function that needs double curried $.equality, but it's fine.
+// needs double curried $.equality
 $.intersectBy = function (eq, xs, ys) {
   var result = [];
   if (xs.length && ys.length) {
     for (var i = 0; i < xs.length; i += 1) {
       var x = xs[i];
-      if (ys.filter(eq(x)).length > 0) {
-        result.push(x);
+      for (var j = 0; j < ys.length; j += 1) {
+        if (eq(x, ys[j])) {
+          result.push(x);
+          break;
+        }
       }
     }
   }
@@ -658,12 +671,13 @@ $.intersectBy = function (eq, xs, ys) {
 };
 
 $.intersect = function (xs, ys) {
-  return $.intersectBy($.eq, xs, ys);
+  return $.intersectBy($.eq2, xs, ys);
 };
 
 // nub, build up a list of unique (w.r.t. equality)
 // elements by checking if current is not 'equal' to anything in the buildup
 // $.curry($.nubBy, $.eq) === $.nub
+// http://jsperf.com/nubnubbytest1 => indexOf clearly beats calling $.nubBy($.eq2)
 $.nub = function (xs) {
   var result = [];
   for (var i = 0; i < xs.length; i += 1) {
@@ -719,11 +733,9 @@ $.groupBy = function (eq, xs) {
 // deletes everything the equality test finds equal to x
 $.deleteBy = function (eq, xs, x) {
   var result = [];
-  if (xs.length) {
-    for (var i = 0; i < xs.length; i += 1) {
-      if (!eq(x, xs[i])) {
-        result.push(xs[i]);
-      }
+  for (var i = 0; i < xs.length; i += 1) {
+    if (!eq(x, xs[i])) {
+      result.push(xs[i]);
     }
   }
   return result;
