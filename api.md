@@ -2,7 +2,7 @@
 
 ## Common
 
-- id `$.id(x)`
+### $.id(x) :: x
 
 The identity function f(x) = x.
 
@@ -11,7 +11,7 @@ var x = "going through the identity";
 $.id(x) === x; // true
 ````
 
--  noop `$.noop([x])`
+### $.noop([]) :: Undefined
 
 No operation. Does nothing.
 
@@ -20,7 +20,7 @@ var log = (console) ? console.log || $.noop
 log("log this if possible");
 ````
 
-- constant `$.constant(x)`
+### $.constant(x) :: (y -> x)
 
 Returns the constant function f(z) = x.
 
@@ -28,7 +28,7 @@ Returns the constant function f(z) = x.
 [1,3,2].map($.constant(5)); // [5, 5, 5]
 ````
 
-- has `$.has(obj, key)`
+### $.has(obj, key) :: Bool
 
 Safe call to Object.prototype.hasOwnProperty. This is not meant to facilitate using an
 [object as a hash](http://www.devthought.com/2012/01/18/an-object-is-not-a-hash/).
@@ -40,9 +40,9 @@ var a = {};
 $.has(a, "toString"); // false
 ````
 
-- not `$.not(fn)`
+### $.not(f) :: g
 
-Returns a function which returns the result of `fn` negated.
+Returns a function `g` which negates the result of `f`.
 Sometimes useful for composing certain functions.
 
 ````javascript
