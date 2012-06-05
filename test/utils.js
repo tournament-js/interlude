@@ -86,6 +86,17 @@ exports["test#folded shortcuts"] = function () {
 exports["test#lifted functions"] = function () {
   a.equal($.maximum([1,3,2,5,2]), 5, "max [1,3,2,5,2] === 5");
   a.equal($.minimum([1,3,2,5,2]), 1, "min [1,3,2,5,2] === 1");
+
+  var mbRes = $.maximumBy($.get('length'), [ [1,3,2], [2], [2,3] ]);
+  a.eql(mbRes, [1,3,2], 'maxBy returns the element for which length is maximal');
+  var collectRes = $.maximum($.collect('length', [ [1,3,2], [2], [2,3] ]));
+  a.equal(collectRes, 3, "maximum of collects simply returns the value");
+
+  var mbRes = $.minimumBy($.get('length'), [ [1,3,2], [2], [2,3] ]);
+  a.eql(mbRes, [2], 'minBy returns the element for which length is maximal');
+  var collectRes = $.minimum($.collect('length', [ [1,3,2], [2], [2,3] ]));
+  a.equal(collectRes, 1, "minymum of collects simply returns the value");
+
   a.equal($.add(1,2,3,4), 10, "add(1,2,3,4) === 10");
   a.equal($.multiply(1,2,3,4), 24, "multiply(1,2,3,4) === 24");
   a.eql($.concat([1,2,3], [4], [[5]]), [1,2,3,4,[5]], "$.concat");
@@ -160,19 +171,19 @@ exports["test#ordering"] = function () {
   a.equal($.weq(5)('5'), true, "5 == '5'");
 
   // compare
-  a.eql([[1,3],[1,2],[1,5]].sort($.comparing2(1)), [[1,2],[1,3],[1,5]], "comparing");
-  a.eql([{a:2},{a:1}].sort($.comparing2('a')), [{a:1}, {a:2}], "comparing objs");
+  a.eql([[1,3],[1,2],[1,5]].sort($.comparing(1)), [[1,2],[1,3],[1,5]], "comparing");
+  a.eql([{a:2},{a:1}].sort($.comparing('a')), [{a:1}, {a:2}], "comparing objs");
 
   var money = [{id: 1, money: 3}, {id: 2, money: 0}, {id: 3, money: 3}];
-  var res = money.sort($.comparing2('money', '+', 'id', '+'));
+  var res = money.sort($.comparing('money', '+', 'id', '+'));
   var resExp = [ { id: 3, money: 3 }, { id: 1, money: 3 }, { id: 2, money: 0 } ];
   a.eql(res, resExp, "money max first, then id max first");
 
-  var res = money.sort($.comparing2('money', '+', 'id', '-'));
+  var res = money.sort($.comparing('money', '+', 'id', '-'));
   var resExp = [ { id: 1, money: 3 }, { id: 3, money: 3 }, { id: 2, money: 0 } ];
   a.eql(res, resExp, "money max first, then id min first");
 
-  var res = money.sort($.comparing2('money', '+', 'id'));
+  var res = money.sort($.comparing('money', '+', 'id'));
   var resExp = [ { id: 1, money: 3 }, { id: 3, money: 3 }, { id: 2, money: 0 } ];
   a.eql(res, resExp, "money max first, then id min first (default '-')");
 

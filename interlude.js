@@ -259,7 +259,8 @@ $.equality = function () {
   };
 };
 
-$.comparing2 = function () {
+// result of this can be passed directly to Array::sort
+$.comparing = function () {
   var args = slice.call(arguments, 0);
   return function (x, y) {
     for (var i = 0; i < args.length; i += 2) {
@@ -271,23 +272,10 @@ $.comparing2 = function () {
     return 0;
   };
 };
+// no double curried version of this, it makes little sense to have
+// the measure is not even a simple GT/EQ/LT and the size of numbers do not mean anything
+// therefore having such a version would just encourage a bad style that would be easiest
 
-
-// double curried version of $.comparing2
-$.comparing = function () {
-  var args = slice.call(arguments, 0);
-  return function (y) {
-    return function (x) {
-      for (var i = 0; i < args.length; i += 2) {
-        var factor = -parseInt((args[i+1] || '-') + 1); // => 1 by default
-        if (x[args[i]] !== y[args[i]]) {
-          return factor*(x[args[i]] - y[args[i]]);
-        }
-      }
-      return 0;
-    };
-  };
-};
 
 // ---------------------------------------------
 // Membership
@@ -365,20 +353,6 @@ $.scan = function (fn, initial) {
   };
 };
 
-
-// ---------------------------------------------
-// binary operators folded over lists
-// ---------------------------------------------
-
-// using fold with binary operators to give lifted functions
-// any of these (i.e. they act on a list) can be remembered by "take the " fnName
-// wheras the variadic counterpart has the name of the associative operator
-$.sum = $.fold($.add2, 0);
-$.product = $.fold($.multiply2, 1);
-$.concatenation = $.fold($.concat2, []);
-$.and = $.fold($.and2, true);
-$.or = $.fold($.or2, false);
-
 // ---------------------------------------------
 // lifts and unlifts
 // ---------------------------------------------
@@ -391,34 +365,6 @@ $.lift = function (fn, context) {
   };
 };
 
-// examples
-// follows the "take the" fnName of list semantic
-// max/min already have unlifted variadic counterparts so they can simply be lifted
-// rather than folding over a two parameter arg
-$.maximum = $.lift(Math.max, Math);
-$.minimum = $.lift(Math.min, Math);
-
-// generalized versions:
-$.maximumBy = function (fn, xs) {
-  return $.maximum(xs.map(fn));
-};
-
-$.minimumBy = function (fn, xs) {
-  return $.minimum(xs.map(fn));
-};
-
-
-// (new ClassInst) can't be lifted - has to be one manually
-// maybe not want to put this in here, after all Object.create exists
-// and classes are a different thing for people to disagree over
-$.construct = function (Ctor, args) {
-  var F = function () {
-    Ctor.apply(this, args);
-  };
-  F.prototype = Ctor.prototype;
-  return new F();
-};
-
 // take a function operating on an array and turn it into a multi-parameter function, inverse of lift
 // because argument based functions are semantic tand is most sensible with zipWith
 $.unlift = function (fn, context) {
@@ -427,6 +373,39 @@ $.unlift = function (fn, context) {
     return fn.apply(context, [args]);
   };
 };
+
+// ---------------------------------------------
+// binary operators folded over lists
+// ---------------------------------------------
+
+// follows the "take the" fnName of list semantic
+// max/min already have unlifted variadic counterparts so they can simply be lifted
+// rather than folding over a two parameter arg
+$.maximum = $.lift(Math.max, Math);
+$.minimum = $.lift(Math.min, Math);
+
+
+// generalized versions:
+$.maximumBy = function (fn, xs) {
+  var res = xs.map(fn)
+    , idx = res.indexOf($.maximum(res));
+  return xs[idx];
+};
+
+$.minimumBy = function (fn, xs) {
+  var res = xs.map(fn)
+    , idx = res.indexOf($.minimum(res));
+  return xs[idx];
+};
+
+// using fold with binary operators to give lifted functions
+// any of these (i.e. they act on a list) can be remembered by "take the " fnName
+// wheras the variadic counterpart has the name of the associative operator
+$.sum = $.fold($.add2, 0);
+$.product = $.fold($.multiply2, 1);
+$.concatenation = $.fold($.concat2, []);
+$.and = $.fold($.and2, true);
+$.or = $.fold($.or2, false);
 
 // variadic version of the lifted functions
 // named after the operation, i.e. "we " fnName (together) "arg1, arg2, ..."
@@ -532,7 +511,7 @@ $.zipWith = function () {
     , args = slice.call(arguments, 1)
     , numLists = args.length
     , results = []
-    , len = $.minimumBy($.get('length'), args);
+    , len = $.minimum($.collect('length', args));
 
   for (var i = 0; i < len; i += 1) {
     var els = [];
@@ -546,16 +525,16 @@ $.zipWith = function () {
 
 // zip, zip3, zip4.. all in one!
 // inlining quite a bit faster: http://jsperf.com/inlinezip3
+// then not slicing helps too: http://jsperf.com/tosliceornottoslice5
 $.zip = function () {
-  var args = slice.call(arguments, 0)
-    , numLists = args.length
+  var numLists = arguments.length
     , results = []
-    , len = $.minimumBy($.get('length'), args);
+    , len = $.minimum($.collect('length', arguments));
 
   for (var i = 0; i < len; i += 1) {
     var els = [];
     for (var j = 0; j < numLists; j += 1) {
-      els.push(args[j][i]);
+      els.push(arguments[j][i]);
     }
     results.push(els);
   }

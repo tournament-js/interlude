@@ -148,23 +148,6 @@ equallyCool(steve, peter); // false
 
 This can be very powerful combined with the generalized list functions further on!
 
-### $.comparing2(prop [, ord [, ..]]) :: ((x, y) -> x 'compare props' y)
-This is a special function that creates a comparison function which can be used
-directly by Array.prototype.sort. It will return the difference of x[prop] and
-y[prop] with the direction specified by either a '+' for ascending, or
-'-' for descending (default). If multiple properties are used, then the direction
-for each must be specified in alternating order.
-
-Note that you can only sort by numeric properties with this!
-
-````javascript
-[[1,3], [2,2],[3,4]].sort($.comparing2(1)); // [ [2,2], [1,3], [3,4] ]
-
-var money = [{id: 1, money: 3}, {id: 2, money: 0}, {id: 3, money: 3}];
-money.sort($.comparing2('money', '+', 'id', '+'));
-// [ { id: 3, money: 3 }, { id: 1, money: 3 }, { id: 2, money: 0 } ]
-````
-
 ## Curried Binary operators
 This section is useful for maps, as one of their arguments are curried,
 cutting down the amount of very basic closured lambdas you make.
@@ -218,9 +201,18 @@ var lenEquals = $.equality2('length');
 [[1,3,5], [2,3], [2,4,6]].filter(lenEquals(3)); // [ [1,3,5], [2,4,6] ]
 ````
 
-### $.comparing(prop [, ord [, ..]])(y) :: (x -> x 'compare props' y)
-This is $.comparing2 curried with the element to compare against.
+## Membership
 
+### $.elem(xs) :: (x -> xs.indexOf(x) >= 0)
+### $.notElem(xs) :: (x -> xs.indexOf(x) < 0)
+
+The membership tests are accessors for Array.prototype.indexOf,
+but with the array curried.
+
+```javascript
+[1,2,3,4,3].filter($.elem([1,3])); // [ 1, 3, 3 ]
+[1,2,3,4,3].filter($.notElem([1,3])); // [ 2, 4 ]
+````
 
 ##  Higher Order Looping
 These tools allow loop like code to be written in a more declarative style.
@@ -238,7 +230,7 @@ $.range(1, 6, 2); // [ 1, 3, 5 ]
 $.range(0, 6, 2); // [ 0, 2, 4, 6 ]
 ````
 
-### $.iterate(Int times, Function f) :: (initial -> [result])
+### $.iterate(Int times, Function f) :: (initial -> results)
 Returns a function which iterates `times` times over `f` and passing the result
 of the previous iteration into the next call to `f` and collecting the results.
 
@@ -254,11 +246,32 @@ $.product = $.fold($.multiply2, 1);
 var fiveFactorial = $.product($.range(1,5)); // 120
 ````
 
-### $.scan (Function f [, start]) :: (xs -> [result])
+### $.scan (Function f [, start]) :: (xs -> results)
 Does the same as `$.fold` but collects all the intermediate results.
 
 ````javascript
 $.scan($.add2, 0)([1,1,1,1]); // [ 0, 1, 2, 3, 4 ]
+````
+
+## Comparison
+### $.comparing(prop [, ord [, ..]]) :: ((x, y) -> x 'compare props' y)
+This is a special function that creates a comparison function which can be used
+directly by Array.prototype.sort. Pass in the name(s) of a (numeric!) property the
+elements to be sorted all have, and a sort compatible function will be returned.
+
+A second parameter can be specified to set the
+direction of comparison; '+' for ascending, '-' for descending (default).
+
+It is possible to also sort by multible properties, i.e. sort by the first property
+if they are different, otherwise, the next and so on. If multiple properties
+are used, then the direction for each must be specified in alternating order.
+
+````javascript
+[[1,3], [2,2],[3,4]].sort($.comparing(1)); // [ [2,2], [1,3], [3,4] ]
+
+var money = [{id: 1, money: 3}, {id: 2, money: 0}, {id: 3, money: 3}];
+money.sort($.comparing('money', '+', 'id', '+'));
+// [ { id: 3, money: 3 }, { id: 1, money: 3 }, { id: 2, money: 0 } ]
 ````
 
 
@@ -268,10 +281,64 @@ acting on an Array. Unlifting is the reverse process; turn an array function
 into a variadic one. These operations are used by Interlude to create synonymous
 versions that normally we'd have to manually fn.apply ourselves.
 
-### $.lift (Function f [, context]) -> (xs -> f.apply(context, xs))
-An accessor for Function.prototype.apply, but curried for the arguments array.
+### $.lift(Function f [, context]) -> (xs -> f.apply(context, xs))
+An accessor for Function.prototype.apply, but curried for the array of arguments.
 
 ```javascript
 $.maximum = $.lift(Math.max, Math);
 $.maximum([3,6,4]); // 6
 ````
+
+### $.unlift(Function f [, context]) -> (args... -> fn.apply(context, [args]))
+Take a lifted function (one that take a single array argument) and turn it into a
+variadic one; the inverse operation of lift. Variadic/unlifted functions work with
+$.zipWith for any number of lists.
+
+````javascript
+$.multiply = $.unlift($.product);
+$.zipWith($.multiply, [2,2,2], [1,1,1], [2,2,2]); // [ 4, 4, 4 ]
+````
+
+## Array Functions
+These act on an array as its primary argument. The semantic in these names
+compared to the variadic/2-argument counterparts is that we can say
+"we take the" maximum/sum/product/logical-and "of the list".
+
+### $.maximum(xs) :: Number
+### $.minimum(xs) :: Number
+### $.maximumBy(fn, xs) :: xs[maxidx]
+### $.minimumBy(fn, xs) :: xs[minidx]
+
+If you need to do some computation on each element before taking the max,
+then `$.maximumBy` is appropriate, it will also return the element for which
+`fn` return the max rather than the maximum return. To get the maximum return
+value consider collecting up the values first.
+
+````javascript
+$.maximum([1,3,2,5]); // 5
+$.maximumBy($.get('length'), [ [1,3,2], [2], [2,3] ]); // [ 1, 3, 2 ]
+$.maximum($.collect('length', [ [1,3,2], [2], [2,3] ])); // 3
+````
+
+
+### $.sum(xs) :: Number
+### $.product(xs) :: Number
+### $.concatenation(xs) :: Array
+### $.and(xs) :: Bool
+### $.or(xs) :: Bool
+
+## Variadic Functions
+These act on several arguments. The semantic in these names come from the verb
+required to do the action to the arguments; "we" add/multiply/concat
+"arg1, arg2,..".
+
+### $.add(x [, y [, z [, ..]]])
+### $.multiply(x [, y [, z [, ..]]])
+### $.concat(xs [, ys [, zs [, ..]]])
+
+
+## Functional Composition
+### $.compose(f [, g [, ..]]) :: (x -> f(g(..(x))))
+### $.sequence(f [, g [, ..]]) :: (x -> ..(g(f(x))))
+### $.composition(fns) :: (x -> $.compose(fn1, ..)(x))
+### $.pipeline(fns) :: (x -> $.sequence(fn1, ..)(x))
