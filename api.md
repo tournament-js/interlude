@@ -2,7 +2,7 @@
 
 ## Common
 
-### $.id(x) :: x
+### $.id :: (x -> x)
 
 The identity function f(x) = x.
 
@@ -11,7 +11,7 @@ var x = "going through the identity";
 $.id(x) === x; // true
 ````
 
-### $.noop([]) :: Undefined
+### $.noop :: (x -> Undefined)
 
 No operation. Does nothing.
 
@@ -29,6 +29,7 @@ Returns the constant function f(z) = x.
 ````
 
 ### $.has(obj, key) :: Bool
+### $.has(obj, key) :: Bool
 
 Safe call to Object.prototype.hasOwnProperty. This is not meant to facilitate using an
 [object as a hash](http://www.devthought.com/2012/01/18/an-object-is-not-a-hash/).
@@ -40,7 +41,7 @@ var a = {};
 $.has(a, "toString"); // false
 ````
 
-### $.not(f) :: g
+### $.not(Function f) :: Function g
 
 Returns a function `g` which negates the result of `f`.
 Sometimes useful for composing certain functions.
@@ -51,7 +52,7 @@ Sometimes useful for composing certain functions.
 
 ## Math
 
-- gcd `$.gcd(a, b)`
+### $.gcd(Int a, Int b) :: Int
 
 Returns the greatest common divisor (aka highest common factor) of the Integers
 a and b.
@@ -61,7 +62,7 @@ $.gcd(3, 5); // 1
 $.gcd(10, 15); // 5
 ````
 
-- lcm `$.lcm(a, b)`
+### $.lcm(Int a, Int b) :: Int
 
 Returns the least common multiple of the Integers a and b.
 
@@ -70,26 +71,26 @@ $.lcm(3, 5); // 15
 $.lcm(10, 15); // 30
 ````
 
-- pow `$.pow(x)`
+### $.pow(Number exp) :: (Number x -> Number)
 
-Returns a function which takes the input to the power of x.
+Returns a function which returns the input to the power of exp.
 
 ````javascript
 $.pow(2)(3); // 8
 [1,2,3,4].map($.pow(2)); // [1, 4, 9, 16]
 ````
 
-- logBase `$.logBase(b)`
+### $.logBase(Number base) :: (Number x -> Number)
 
-Returns a function which takes the input to the log base b.
+Returns a function which returns log base b of input.
 
 ````javascript
 logBase(2)(8); // 3
 [16,8,4,2].map($.logBase(2)); // [4, 3, 2, 1]
 ````
 
-- even `$.even(n)`
-- odd `$.odd(n)`
+# $.even, $.odd :: Number -> Bool
+Returns whether or not the number is even or odd, respectively.
 
 ````javascript
 $.even(5); // false
