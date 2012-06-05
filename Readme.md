@@ -71,7 +71,7 @@ $.nubBy(notCoprime, $.range(2, 20));
 // [ 2, 3, 5, 7, 11, 13, 17, 19 ]
 ````
 
-Read the API (TODO)
+Read the [API](api.md)
 
 ## Installation
 

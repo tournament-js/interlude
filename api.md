@@ -11,7 +11,7 @@ var x = "going through the identity";
 $.id(x) === x; // true
 ````
 
-### $.noop([x]) :: Undefined
+### $.noop([..]) :: Undefined
 No operation. Does nothing.
 
 ````javascript
@@ -37,15 +37,15 @@ var a = {};
 $.has(a, "toString"); // false
 ````
 
-### $.not(Function f) :: Function g
-Returns a function `g` which negates the result of `f`.
+### $.not(fn) :: (x -> !fn(x))
+Returns a function which negates the result of `f`.
 Sometimes useful for composing certain functions.
 
 ````javascript
 [8,3,4,5,6].filter($.not($.gt(5))); // [3, 4, 5]
 ````
 
-### $.all (Function f) -> (xs -> xs.every(f))
+### $.all (fn) -> (xs -> xs.every(fn))
 An accessor for Array.prototype.every, but curried for the array.
 
 ````javascript
@@ -53,7 +53,7 @@ $.all($.gt(2))([3,4,5]); // true
 [[3,4,5], [1,3,5]].filter($.all($.gt(2))); // [ [3, 4, 5] ]
 ````
 
-### $.any (Function f) -> (xs -> xs.some(f))
+### $.any (fn) -> (xs -> xs.some(fn))
 An accessor for Array.prototype.some, but curried for the array.
 
 ````javascript
@@ -61,7 +61,7 @@ $.any($.gt(2))([1,2,3]); // true
 [[3,4,5], [4,5,6]].filter($.any($.elem([6, 7]))); // [ [4, 5, 6] ]
 ````
 
-### $.none (Function f) -> (xs -> !xs.some(f))
+### $.none (fn) -> (xs -> !xs.some(fn))
 An accessor for the negated Array.prototype.some, but curried for the array.
 
 ## Math
