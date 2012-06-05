@@ -71,7 +71,7 @@ $.nubBy(notCoprime, $.range(2, 20));
 // [ 2, 3, 5, 7, 11, 13, 17, 19 ]
 ````
 
-Read the [API](interlude/api.md)
+Read the [API](https://github.com/clux/interlude/blob/master/api.md)
 
 ## Installation
 
