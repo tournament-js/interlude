@@ -2,6 +2,7 @@
 ==================
   * DOCS
   * tests for wrappers
+  * $.equality2 and $.comparing2 properly added with curried counterparts
 
 0.2.0 / 2012-06-03
 ==================

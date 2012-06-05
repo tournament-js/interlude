@@ -160,8 +160,24 @@ exports["test#ordering"] = function () {
   a.equal($.weq(5)('5'), true, "5 == '5'");
 
   // compare
-  a.eql([[1,3],[1,2],[1,5]].sort($.comparing(1)), [[1,2],[1,3],[1,5]], "comparing");
-  a.eql([{a:2},{a:1}].sort($.comparing('a')), [{a:1}, {a:2}], "comparing objs");
+  a.eql([[1,3],[1,2],[1,5]].sort($.comparing2(1)), [[1,2],[1,3],[1,5]], "comparing");
+  a.eql([{a:2},{a:1}].sort($.comparing2('a')), [{a:1}, {a:2}], "comparing objs");
+
+  var money = [{id: 1, money: 3}, {id: 2, money: 0}, {id: 3, money: 3}];
+  var res = money.sort($.comparing2('money', '+', 'id', '+'));
+  var resExp = [ { id: 3, money: 3 }, { id: 1, money: 3 }, { id: 2, money: 0 } ];
+  a.eql(res, resExp, "money max first, then id max first");
+
+  var res = money.sort($.comparing2('money', '+', 'id', '-'));
+  var resExp = [ { id: 1, money: 3 }, { id: 3, money: 3 }, { id: 2, money: 0 } ];
+  a.eql(res, resExp, "money max first, then id min first");
+
+  var res = money.sort($.comparing2('money', '+', 'id'));
+  var resExp = [ { id: 1, money: 3 }, { id: 3, money: 3 }, { id: 2, money: 0 } ];
+  a.eql(res, resExp, "money max first, then id min first (default '-')");
+
+//
+
 };
 
 exports["test#membership"] = function () {

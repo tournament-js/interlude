@@ -32,6 +32,25 @@ $.not = function (fn) {
   }
 };
 
+// any/all/none are more useful for reverse currying every/some than unlifting and/or
+$.all = function (fn) {
+  return function (xs) {
+    return xs.every(fn);
+  };
+};
+
+$.any = function (fn) {
+  return function (xs) {
+    return xs.some(fn);
+  };
+};
+
+$.none = function (fn) {
+  return function (xs) {
+    return !xs.some(fn);
+  };
+};
+
 // ---------------------------------------------
 // Math
 // ---------------------------------------------
@@ -73,46 +92,6 @@ $.even = function (n) {
 
 $.odd = function (n) {
   return n % 2 === 1;
-};
-
-// ---------------------------------------------
-// curried binary operations
-// ---------------------------------------------
-
-$.plus = function (x) {
-  return function (y) {
-    return y + x;
-  };
-};
-
-$.subtract = function (x) {
-  return function (y) {
-    return y - x;
-  };
-};
-
-$.times = function (x) {
-  return function (y) {
-    return y * x;
-  };
-};
-
-$.divide = function (x) {
-  return function (y) {
-    return y / x;
-  };
-};
-
-$.append = function (xs) {
-  return function (ys) {
-    return ys.concat(xs);
-  };
-};
-
-$.prepend = function (xs) {
-  return function (ys) {
-    return xs.concat(ys);
-  };
 };
 
 // ---------------------------------------------
@@ -168,8 +147,192 @@ $.lte2 = function (x, y) {
 };
 
 // ---------------------------------------------
+// curried binary operations
+// ---------------------------------------------
+
+$.plus = function (x) {
+  return function (y) {
+    return y + x;
+  };
+};
+
+$.subtract = function (x) {
+  return function (y) {
+    return y - x;
+  };
+};
+
+$.times = function (x) {
+  return function (y) {
+    return y * x;
+  };
+};
+
+$.divide = function (x) {
+  return function (y) {
+    return y / x;
+  };
+};
+
+$.append = function (xs) {
+  return function (ys) {
+    return ys.concat(xs);
+  };
+};
+
+$.prepend = function (xs) {
+  return function (ys) {
+    return xs.concat(ys);
+  };
+};
+
+$.gt = function (a) {
+  return function (b) {
+    return b > a;
+  };
+};
+
+$.lt = function (a) {
+  return function (b) {
+    return b < a;
+  };
+};
+
+$.eq = function (a) {
+  return function (b) {
+    return b === a;
+  };
+};
+
+// weak eq
+$.weq = function (a) {
+  return function (b) {
+    return b == a;
+  };
+};
+
+$.gte = function (a) {
+  return function (b) {
+    return b >= a;
+  };
+};
+
+$.lte = function (a) {
+  return function (b) {
+    return b <= a;
+  };
+};
+
+// ---------------------------------------------
+// Special ordering and equality (both versions)
+// ---------------------------------------------
+
+// what equality means for generalized functions can be created with $.equality
+// takes what to count as equality first, then x, then y
+// partition takes it curried to up to y, intersect partitioned up to x and y
+// can make custom equality functions that does not simply get one property by:
+// $.compose($.eq, $.get(0)) and replacing $.get with a function of choice
+$.equality2 = function () {
+  var pargs = slice.call(arguments, 0);
+  return function (x, y) {
+    for (var i = 0; i < pargs.length; i += 1) {
+      if (x[pargs[i]] !== y[pargs[i]]) {
+        return false;
+      }
+    }
+    return true;
+  };
+};
+
+// double curried version of $.equality2 to use in filters and $.partition
+$.equality = function () {
+  var pargs = slice.call(arguments, 0);
+  return function (y) {
+    return function (x) {
+      for (var i = 0; i < pargs.length; i += 1) {
+        if (x[pargs[i]] !== y[pargs[i]]) {
+          return false;
+        }
+      }
+      return true;
+    };
+  };
+};
+
+$.comparing2 = function () {
+  var args = slice.call(arguments, 0);
+  return function (x, y) {
+    for (var i = 0; i < args.length; i += 2) {
+      var factor = -parseInt((args[i+1] || '-') + 1); // => 1 by default
+      if (x[args[i]] !== y[args[i]]) {
+        return factor*(x[args[i]] - y[args[i]]);
+      }
+    }
+    return 0;
+  };
+};
+
+
+// double curried version of $.comparing2
+$.comparing = function () {
+  var args = slice.call(arguments, 0);
+  return function (y) {
+    return function (x) {
+      for (var i = 0; i < args.length; i += 2) {
+        var factor = -parseInt((args[i+1] || '-') + 1); // => 1 by default
+        if (x[args[i]] !== y[args[i]]) {
+          return factor*(x[args[i]] - y[args[i]]);
+        }
+      }
+      return 0;
+    };
+  };
+};
+
+// ---------------------------------------------
+// Membership
+// ---------------------------------------------
+
+$.elem = function (xs) {
+  return function (x) {
+    return xs.indexOf(x) >= 0;
+  };
+};
+
+$.notElem = function (xs) {
+  return function (x) {
+    return xs.indexOf(x) < 0;
+  };
+};
+
+// allows stuff like
+// [1,2,3,4,3].filter($.elem([1,3]))  -> [1,3,3]
+// [1,2,3,4,3].filter($.notElem[1,3]) -> [2,4]
+
+
+// ---------------------------------------------
 // Higher order looping
 // ---------------------------------------------
+
+// enumerate the first n positive integers
+// like _.range or python's range, but 1-indexed inclusive
+$.range = function (start, stop, step) {
+  if (arguments.length <= 1) {
+    stop = start || 1;
+    start = 1;
+  }
+  step = arguments[2] || 1;
+
+  var len = Math.max(Math.ceil((stop - start + 1) / step), 0)
+    , idx = 0
+    , range = new Array(len);
+
+  while (idx < len) {
+    range[idx++] = start;
+    start += step;
+  }
+  return range;
+};
 
 $.iterate = function (times, fn) {
   return function (x) {
@@ -199,45 +362,6 @@ $.scan = function (fn, initial) {
       result.push(fn(result[i], xs[i]));
     }
     return result;
-  };
-};
-
-// enumerate the first n positive integers
-// like _.range or python's range, but 1-indexed inclusive
-$.range = function (start, stop, step) {
-  if (arguments.length <= 1) {
-    stop = start || 1;
-    start = 1;
-  }
-  step = arguments[2] || 1;
-
-  var len = Math.max(Math.ceil((stop - start + 1) / step), 0)
-    , idx = 0
-    , range = new Array(len);
-
-  while (idx < len) {
-    range[idx++] = start;
-    start += step;
-  }
-  return range;
-};
-
-// any/all are more useful for reverse currying every/some than unlifting and/or
-$.all = function (fn) {
-  return function (xs) {
-    return xs.every(fn);
-  };
-};
-
-$.any = function (fn) {
-  return function (xs) {
-    return xs.some(fn);
-  };
-};
-
-$.none = function (fn) {
-  return function (xs) {
-    return !xs.some(fn);
   };
 };
 
@@ -439,88 +563,6 @@ $.zip = function () {
 };
 
 // ---------------------------------------------
-// ordering
-// ---------------------------------------------
-
-// sort helper
-// put in property names (in order), you want to order by
-// then pass the resulting function to xs.sort()
-$.comparing = function () {
-  var pargs = slice.call(arguments, 0);
-  return function (x, y) {
-    for (var i = 0; i < pargs.length; i += 1) {
-      if (x[pargs[i]] !== y[pargs[i]]) {
-        return x[pargs[i]] - y[pargs[i]];
-      }
-      return 0;
-    }
-  };
-};
-
-// functional comparison helpers curried to one level
-$.gt = function (a) {
-  return function (b) {
-    return b > a;
-  };
-};
-
-$.lt = function (a) {
-  return function (b) {
-    return b < a;
-  };
-};
-
-$.eq = function (a) {
-  return function (b) {
-    return b === a;
-  };
-};
-
-// weak eq
-$.weq = function (a) {
-  return function (b) {
-    return b == a;
-  };
-};
-
-$.gte = function (a) {
-  return function (b) {
-    return b >= a;
-  };
-};
-
-$.lte = function (a) {
-  return function (b) {
-    return b <= a;
-  };
-};
-
-// can do stuff like
-// [1,4,2,5,2,3].filter(gt(3)); -> [4,5]
-// [[1,3,5], [2,3,1]].filter(any(gte(5))) -> [ [ 1, 3, 5 ] ]
-
-// ---------------------------------------------
-// Membership
-// ---------------------------------------------
-
-$.elem = function (xs) {
-  return function (x) {
-    return xs.indexOf(x) >= 0;
-  };
-};
-
-$.notElem = function (xs) {
-  return function (x) {
-    return xs.indexOf(x) < 0;
-  };
-};
-
-// allows stuff like
-// [1,2,3,4,3].filter(elem([1,3]))  -> [1,3,3]
-// [1,2,3,4,3].filter(notElem[1,3]) -> [2,4]
-
-
-// ---------------------------------------------
 // Function Wrappers
 // ---------------------------------------------
 
@@ -627,38 +669,6 @@ $.insertBy = function (cmp, xs, x) {
 // $.partition($.equality(0)([2]), [[1], [2], [3], [2]])
 $.partition = function (fn, xs) {
   return [xs.filter(fn), xs.filter($.not(fn))];
-};
-
-// what equality means for generalized functions can be created with $.equality
-// takes what to count as equality first, then x, then y
-// partition takes it curried to up to y, intersect partitioned up to x and y
-// can make custom equality functions that does not simply get one property by:
-// $.compose($.eq, $.get(0)) and replacing $.get with a function of choice
-$.equality2 = function () {
-  var pargs = slice.call(arguments, 0);
-  return function (x, y) {
-    for (var i = 0; i < pargs.length; i += 1) {
-      if (x[pargs[i]] !== y[pargs[i]]) {
-        return false;
-      }
-      return true;
-    }
-  };
-};
-
-// double curried version of $.equality2 to use in filters and $.partition
-$.equality = function () {
-  var pargs = slice.call(arguments, 0);
-  return function (x) {
-    return function (y) {
-      for (var i = 0; i < pargs.length; i += 1) {
-        if (x[pargs[i]] !== y[pargs[i]]) {
-          return false;
-        }
-        return true;
-      }
-    };
-  };
 };
 
 // needs double curried $.equality
