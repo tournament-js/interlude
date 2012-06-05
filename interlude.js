@@ -26,18 +26,18 @@ $.has = function (obj, key) {
 };
 
 // can sometimes be useful to compose with
-$.not = function (x) {
-  return !x;
+$.not = function (fn) {
+  return function (x) {
+    return !fn(x)
+  }
 };
 
 // ---------------------------------------------
 // Math
 // ---------------------------------------------
 
-// lifted versions of the first two exist
-// but they're hard to name sensibly different, and too peripheral
-// lcm = $.lift($.lcm, 1);
-// gcd = $.lift($.gcd, Infinity);
+// can easily $.lift gcd/lcm
+// but they're hard to name sensibly different, and too peripheral for this library
 
 $.gcd = function (a, b) {
   a = Math.abs(a);
@@ -51,7 +51,7 @@ $.gcd = function (a, b) {
 };
 
 $.lcm = function (a, b) {
-  return (!a || !b) ? 0 : Math.abs((Math.floor(a / $.gcd(a, b)) * b));
+  return (!a || !b) ? 0 : Math.abs((a * b) / $.gcd(a, b));
 };
 
 $.pow = function (exponent) {
@@ -65,6 +65,14 @@ $.logBase = function (base) {
   return function (x) {
     return Math.log(x) / Math.log(base);
   };
+};
+
+$.even = function (n) {
+  return n % 2 === 0;
+};
+
+$.odd = function (n) {
+  return n % 2 === 1;
 };
 
 // ---------------------------------------------
@@ -618,7 +626,7 @@ $.insertBy = function (cmp, xs, x) {
 
 // $.partition($.equality(0)([2]), [[1], [2], [3], [2]])
 $.partition = function (fn, xs) {
-  return [xs.filter(fn), xs.filter($.compose($.not, fn))];
+  return [xs.filter(fn), xs.filter($.not(fn))];
 };
 
 // what equality means for generalized functions can be created with $.equality
