@@ -80,7 +80,7 @@ exports["test#folded shortcuts"] = function () {
   a.equal($.and([true, true, true]), true, "and [true, true, true] === true");
   a.equal($.or([true, false, false]), true, "or [true, false, false] === true");
   a.equal($.or([false, false, false]), false, "or [false, false, false] === false");
-  a.eql($.concatenation([[1,2,3],[4],[[5]]]), [1,2,3,4,[5]], "$.concatenation");
+  a.eql($.flatten([[1,2,3],[4],[[5]]]), [1,2,3,4,[5]], "$.flatten");
 };
 
 exports["test#lifted functions"] = function () {

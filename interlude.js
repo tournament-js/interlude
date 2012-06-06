@@ -399,20 +399,16 @@ $.minimumBy = function (fn, xs) {
 };
 
 // using fold with binary operators to give lifted functions
-// any of these (i.e. they act on a list) can be remembered by "take the " fnName
-// wheras the variadic counterpart has the name of the associative operator
 $.sum = $.fold($.add2, 0);
 $.product = $.fold($.multiply2, 1);
-$.concatenation = $.fold($.concat2, []);
+$.flatten = $.fold($.concat2, []);
 $.and = $.fold($.and2, true);
 $.or = $.fold($.or2, false);
 
-// variadic version of the lifted functions
-// named after the operation, i.e. "we " fnName (together) "arg1, arg2, ..."
-// variadic => can be used with zipWith for any number of lists
+// variadic versions => can be used with zipWith for any number of lists
 $.add = $.unlift($.sum);
 $.multiply = $.unlift($.product);
-$.concat = $.unlift($.concatenation);
+$.concat = $.unlift($.flatten);
 
 // ---------------------------------------------
 // compositions and sequencing
@@ -465,11 +461,11 @@ $.get = function (prop) {
 // property get map -- equivalent to _.pluck or xs.map($.get('prop'))
 // works with both xs curried or included
 // $.collect('length', [ [1,3,2],  [2], [1,2] ]) -> [3,1,2]
-$.collect = function (propName, xs) {
+$.collect = function (prop, xs) {
   var fn = function (ys) {
     var result = [];
     for (var i = 0; i < ys.length; i += 1) {
-      result[i] = ys[i][propName];
+      result[i] = ys[i][prop];
     }
     return result;
   };
@@ -479,9 +475,9 @@ $.collect = function (propName, xs) {
 // curried this way so it can be zipped with, i.e.:
 // $.zipWith($.set('prop'), elList, valList);
 // if you wanted to do all three arguments in one, you'd just do a normal assign
-$.set = function (propName) {
+$.set = function (prop) {
   return function (el, value) {
-    el[propName] = value;
+    el[prop] = value;
     return el;
   };
 };
@@ -489,10 +485,10 @@ $.set = function (propName) {
 // property set map -- equivalent to xs.map($.set('prop'))
 // modify a list of objects by setting propName on all objects to valFn(currObj)
 // can use $.inject('prop1', $.constant(5))([{}, {a:2}]) -> [{prop1:5}, {a:2, prop1: 5}]|
-$.inject = function (propName, valFn) {
+$.inject = function (prop, valFn) {
   return function (xs) {
     for (var i = 0; i < xs.length; i += 1) {
-      xs[i][propName] = valFn(xs[i]);
+      xs[i][prop] = valFn(xs[i]);
     }
     return xs;
   };
