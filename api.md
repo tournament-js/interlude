@@ -1,7 +1,7 @@
 # Interlude API
 For document brevity, $ is assumed to be the require placement of
 interlude, fn/f/g/h are assumed to be function names, anything ending in s
-is an array, and x is related to xs by being an element of.
+is an array, and when applicable, x is related to xs by being an element of.
 
 ## Common
 ### $.id(x) :: x
@@ -27,7 +27,7 @@ Returns the constant function f(y) = x.
 [1,3,2].map($.constant(5)); // [5, 5, 5]
 ````
 
-### $.has(obj, key) :: Bool
+### $.has(obj, key) :: Boolean
 Safe call to Object.prototype.hasOwnProperty. This is not meant to facilitate using an
 [object as a hash](http://www.devthought.com/2012/01/18/an-object-is-not-a-hash/).
 
@@ -38,7 +38,7 @@ var a = {};
 $.has(a, "toString"); // false
 ````
 
-### $.not(fn) :: (x -> Bool)
+### $.not(fn) :: (x -> Boolean)
 Returns a function which negates `fn` results.
 Sometimes useful for composing certain functions.
 
@@ -46,7 +46,7 @@ Sometimes useful for composing certain functions.
 [8,3,4,5,6].filter($.not($.gt(5))); // [3, 4, 5]
 ````
 
-### $.all (fn) -> (xs -> Bool)
+### $.all(fn) -> (xs -> Boolean)
 An accessor for Array.prototype.every, but curried for the array.
 
 ````javascript
@@ -54,7 +54,7 @@ $.all($.gt(2))([3,4,5]); // true
 [[3,4,5], [1,3,5]].filter($.all($.gt(2))); // [ [3, 4, 5] ]
 ````
 
-### $.any (fn) -> (xs -> Bool)
+### $.any(fn) -> (xs -> Boolean)
 An accessor for Array.prototype.some, but curried for the array.
 
 ````javascript
@@ -62,7 +62,7 @@ $.any($.gt(2))([1,2,3]); // true
 [[3,4,5], [4,5,6]].filter($.any($.elem([6, 7]))); // [ [4, 5, 6] ]
 ````
 
-### $.none (fn) -> (xs -> Bool)
+### $.none(fn) -> (xs -> Boolean)
 An accessor for the negated Array.prototype.some, but curried for the array.
 
 ## Math
@@ -87,27 +87,30 @@ $.lcm(10, 15); // 30
 ````
 
 ### $.pow(exp) :: (x -> Number)
-Returns a function which returns the input to the power of exp.
+An accessor for Math.pow, but with exponent curried.
 
 ````javascript
-$.pow(2)(3); // 8
+$.pow(3)(2); // 8
+$.pow(1/3)(8); // 2
 [1,2,3,4].map($.pow(2)); // [1, 4, 9, 16]
 ````
 
 ### $.logBase(base) :: (x -> Number)
 Returns a function which returns log base b of input.
+`$.logBase(Math.E)` is functionally equivalent to `Math.log`.
 
 ````javascript
-logBase(2)(8); // 3
+$.logBase(2)(8); // 3
 [16,8,4,2].map($.logBase(2)); // [4, 3, 2, 1]
 ````
 
-### $.even(n), $.odd(n) :: Bool
+### $.even(n), $.odd(n) :: Boolean
 Returns whether or not the number is even or odd, respectively.
 
 ````javascript
 $.even(5); // false
 $.odd(5); // true
+[1,2,3,4,5,6].filter($.even); // [ 2, 4, 6 ]
 ````
 
 ## 2-Argument Binary Operators
@@ -134,7 +137,7 @@ $.add2(2, 3); // 5
 $.or2(false, true); // true
 ````
 
-### $.equality2(props..) :: ((x, y) -> x 'equality on props' y)
+### $.equality2(props..) :: (x, y -> x 'equality on props' y)
 This is a special function that creates an equality testing function based on
 properties to test on. It will return true if and only if all the properties listed
 are the same for both x and y.
@@ -202,14 +205,14 @@ then it is useful to have a curriable version around in case you
 want to filter it.
 
 ````javascript
-var lenEquals = $.equality2('length');
+var lenEquals = $.equality('length');
 [[1,3,5], [2,3], [2,4,6]].filter(lenEquals(3)); // [ [1,3,5], [2,4,6] ]
 ````
 
 ## Membership
 
-### $.elem(xs) :: (x -> Bool)
-### $.notElem(xs) :: (x -> Bool)
+### $.elem(xs) :: (x -> Boolean)
+### $.notElem(xs) :: (x -> Boolean)
 
 The membership tests are accessors for Array.prototype.indexOf,
 but with the array curried.
@@ -240,11 +243,9 @@ An accessor for Array.prototype.reduce, but with the function curried.
 `fn` must be a two parameter (y, x -> y) function.
 
 ````javascript
+$.sun = $.fold($.add2, 0);
 $.product = $.fold($.multiply2, 1);
-var fiveFactorial = $.product($.range(1,5)); // 120
-
 $.flatten = $.fold($.concat2, []);
-$.flatten([ [1,3,2], [2,[3],2] , [1] ]); // [ 1, 3, 2, 2, [ 3 ], 2, 1 ]
 ````
 
 ### $.scan (fn [, start]) :: (xs -> results)
@@ -292,7 +293,7 @@ acting on an Array. Unlifting is the reverse process; turn an array function
 into a variadic one. These operations are used by Interlude to create synonymous
 versions that normally we'd have to manually fn.apply ourselves.
 
-### $.lift(fn [, context]) -> (xs -> fn.apply(context, xs))
+### $.lift(fn [, context]) -> (xs -> Function)
 An accessor for Function.prototype.apply, but curried for the array of arguments.
 
 ```javascript
@@ -300,7 +301,7 @@ $.maximum = $.lift(Math.max, Math);
 $.maximum([3,6,4,2]); // 6
 ````
 
-### $.unlift(fn [, context]) -> (args.. -> fn.apply(context, [args]))
+### $.unlift(fn [, context]) -> (args.. -> Function)
 Take a lifted function (one that take a single array argument) and turn it into a
 variadic one; the inverse operation of lift. Variadic/unlifted functions work with
 $.zipWith for any number of lists.
@@ -332,37 +333,108 @@ $.maximum($.collect('length', [ [1,3,2], [2], [2,3] ])); // 3
 ### $.sum(xs) :: Number
 ### $.product(xs) :: Number
 ### $.flatten(xs) :: Array
-### $.and(xs) :: Bool
-### $.or(xs) :: Bool
+Reduces the level of nesting in an array by one.
+
+````javascript
+$.flatten([ [1,3,2], [2,[3],2] , [1] ]); // [ 1, 3, 2, 2, [ 3 ], 2, 1 ]
+````
+
+### $.and(xs) :: Boolean
+Like `$.any`, but takes a list of elements to be chained together with `&&`.
+
+
+### $.or(xs) :: Boolean
+Like `$.or`, but takes an array of elements to be chained together with `||`.
+
 
 ## Variadic Functions
 These act on several arguments, and can be used with `$.zipWith` for any number
 of lists.
 
-### $.add(x [, y [, z [, ..]]])
-### $.multiply(x [, y [, z [, ..]]])
-### $.concat(xs [, ys [, zs [, ..]]])
+### $.add(x [, y [, ..]])
+### $.multiply(x [, y [, ..]])
+### $.concat(xs [, ys [, ..]])
 
+````javascript
+$.add(1,2,3); // 6
+$.multiply(1,2,3,4,5); // 120
+$.concat([1,2], [3,4], [5,6]); // [ 1, 2, 3, 4, 5, 6 ]
+````
 
 ## Functional Composition
+
 ### $.compose(f [, g [, ..]]) :: (x -> f(g(..(x))))
+Returns a function which will apply the passed in functions in algebraic order;
+i.e. the last function first. The last function can have multiple arguments,
+but all others are simply passed the result of the previous functions.
+
+````javascript
+var isPair = $.compose($.eq(2), $.get('length')); // (xs -> Boolean)
+[[1,3,2], [2], [], [2,1], [1,2]].filter(isPair); // [ [2,1], [1,2] ]
+````
+
 ### $.sequence(f [, g [, ..]]) :: (x -> ..(g(f(x))))
+Same as `$.compose`, but the functions are called in chronological order.
+
+````javascript
+var isPair = $.sequence($.get('length'), $.eq(2)); // (xs -> Boolean)
+````
+
 ### $.composition(fns) :: (x -> $.compose(fn1, ..)(x))
+A lifted version of `$.compose`. Takes an array of functions.
+
 ### $.pipeline(fns) :: (x -> $.sequence(fn1, ..)(x))
+A lifted version of `$.sequence`. Takes an array of functions.
 
 ## Functional Getters/Setters
 ### $.get(prop) :: (el -> el[prop])
-### $.set(prop) :: ((el, value) -> el)
+Very useful helper for extracting a property on an array of objects.
+
+````javascript
+var objs = [{id: 1, s: "h"}, {id: 2, s: "e"}, {id: 3, s: "y"}];
+objs.map($.get('id')); // [ 1, 2, 3 ]
+objs.map($.get('s')).join(''); // 'hey'
+````
+
+Properties can also be extracted from more than one level down:
+
+````javascript
+var objs = [
+  {id: 1, s: "h", obj: {ary: [1,2]} }
+, {id: 2, s: "e", obj: {ary: [3,4]} }
+, {id: 3, s: "y", obj: {ary: [5,6]} }
+];
+objs.map($.get('obj.ary.1')); // [ 2, 4, 6 ]
+````
+
+### $.set(prop) :: (el, value -> el)
 This sets `el[prop] = value` before returning, so it will modify objects passed in.
 This can be used with $.zipWith with an element list and a value list.
 
+````javascript
+var vals = ["Peter", "Bam", "Jo"];
+var items = [{id:1}, {id:2}, {id:3}];
+$.zipWith($.set('name'), items, vals);
+// [ { id: 1, name: 'Peter' },
+//   { id: 2, name: 'Bam' },
+//   { id: 3, name: 'Jo' } ]
+````
+
+Since `$.set` only sets properties on existing object,
+**the object returned is the same as the object passed in**,
+but on return it has new/updated properties.
+
 ### $.collect(prop, xs) :: ys
-Behaviourally equivalent to `xs.map($.get(prop))`.
+Behaviourally equivalent to `xs.map($.get(prop))`, but more direct.
+
+````javascript
+$.collect('length', [ [1,3,2],  [2], [1,2] ]); // [3,1,2]
+````
 
 ### $.inject(prop, fn) :: (xs -> xs)
 Updates `xs[i][prop] = fn(xs[i])` for all i and returns the modified array.
 
-## zip && zipWith
+## Zipping
 A veritable corner stone of Functional Programming made dynamic, and
 now work for any number of lists!
 
@@ -384,3 +456,36 @@ and collects these results rather.
 $.zipWith($.multiply, [2,2,2], [1,0,1], [1,2,3]); // [ 2, 0, 6 ]
 $.zipWith($.plus2, [1,1,1], $.range(5)); // [2, 3, 4]
 ````
+
+
+# Tutorials
+TODO: move to new .md
+## Writing Efficient Functional Code
+JavaScript is not lazy, so writing code in a purely lazy style is not beneficial.
+First see an example where we start out thinking about it purely functionally:
+
+### Sum of all odd squares less than 10000
+First thought implementation:
+
+````javascript
+$.sum($.range(1, 10000).map($.pow(2)).filter($.odd).filter($.lt(10000)));
+// 166650
+````
+
+But noticing that odd square are odd if and only if the original number was odd
+we can skip squaring and filtering out half the list.
+
+````javascript
+$.sum($.range(1, 10000, 2).map($.pow(2)).filter($.lt(10000)));
+// 166650
+````
+
+Finally, we notice that a square is less than 10000 if and only the original
+number was less than the sqrt(10000) = 100.
+
+````javascript
+$.sum($.range(1, 100, 2).map($.pow(2)));
+// 166650
+````
+
+This final code is more efficient, but needs more explanation of what it does.

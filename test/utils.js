@@ -123,6 +123,20 @@ exports["test#get/set"] = function () {
   a.equal($.get('length')([1,2,3]), 3, "$.get('length')");
   a.equal($.get('a')({a:2}), 2, "$.get('a')");
   a.equal($.get(1)([5,7]), 7, "$.get(1)");
+
+  // examples of get
+  var objs = [{id: 1, s: "h"}, {id: 2, s: "e"}, {id: 3, s: "y"}];
+  a.eql(objs.map($.get('id')), [ 1, 2, 3 ], "map get id === 1, 2, 3");
+  a.equal(objs.map($.get('s')).join(''), "hey", "map get s join === hey");
+
+  // deep get
+  var objs = [
+    {id: 1, s: "h", obj: {ary: [1,2]} }
+  , {id: 2, s: "e", obj: {ary: [3,4]} }
+  , {id: 3, s: "y", obj: {ary: [5,6]} }
+  ];
+  a.eql(objs.map($.get('obj.ary.1')), [ 2, 4, 6 ], "deep get on objs.obj.ary.1");
+
   a.eql([[1],[2],[3]].map($.get(0)), [1,2,3], "ary.map($.get(0))");
   a.eql($.collect(0, [[1],[2],[3]]), [1,2,3], "$.collect(0, ary))");
   a.eql($.collect(0) ([[1],[2],[3]]), [1,2,3], "$.collect(0)(ary))");

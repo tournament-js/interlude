@@ -431,11 +431,10 @@ $.compose = function (/*fns...*/) {
 // sequence(f1, f2, f3..., fn)(args...) == fn(...(f3(f2(f1(args...)))))
 // $.sequence($.plus(2), $.plus(3), $.times(2))(2) -> 14
 $.sequence = function (/*fns...*/) {
-  var fns = arguments
-    , numFns = fns.length;
+  var fns = arguments;
   return function () {
     var args = arguments;
-    for (var i = 0; i < numFns; i += 1) {
+    for (var i = 0; i < fns.length; i += 1) {
       args = [fns[i].apply(this, args)];
     }
     return args[0];
@@ -453,14 +452,25 @@ $.pipeline = $.lift($.sequence);
 // simple proprety accessor
 // can also be used for array number accessor
 $.get = function (prop) {
-  return function (el) {
-    return el[prop];
-  };
+  if (/\./.test(prop)) {
+    var props = prop.split('.');
+    return function (el) {
+      var pos = el;
+      for (var i = 0; i < props.length; i += 1) {
+        pos = pos[props[i]];
+      }
+      return pos;
+    }
+  }
+  else {
+    return function (el) {
+      return el[prop];
+    };
+  }
 };
 
 // property get map -- equivalent to _.pluck or xs.map($.get('prop'))
-// works with both xs curried or included
-// $.collect('length', [ [1,3,2],  [2], [1,2] ]) -> [3,1,2]
+// works with both xs curried or included TODO: still do the curried one? slows the uncurried one..
 $.collect = function (prop, xs) {
   var fn = function (ys) {
     var result = [];
@@ -742,9 +752,28 @@ $.unionBy = function (eq, xs, ys) {
   return xs.concat($.fold($.curry($.deleteBy, eq), $.nubBy(eq, ys))(xs));
 };
 
+// functionally === $.unionBy($.eq2, xs, ys);
 $.union = function (xs, ys) {
-  return $.unionBy($.eq2, xs, ys);
+  return xs.concat($.fold($.delete, $.nub(ys))(xs));
 };
+
+
+// ---------------------------------------------
+// maybe do some string things
+// ---------------------------------------------
+
+/*
+// mostly useful for taking bits out of a string in an unconventional way
+// maybe not so useful..
+$.matches = function (regx) {
+  return function (str) {
+    return (str.match(regx) || []).join('');
+  };
+};
+
+// ["kYoto", "wOo", "wUt", "SUCK it!"].map($.capitals).join(''); // 'YOUSUCK'
+$.capitals = $.matches(/[A-Z]/g);
+*/
 
 // ---------------------------------------------
 // Export
