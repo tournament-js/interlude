@@ -126,7 +126,7 @@ returns immediately.
 ### $.and2(x, y) :: x && y
 ### $.or2(x, y) :: x || y
 ### $.eq2(x, y) :: x === y
-### $.weq2(x, y) :: x == y
+### $.neq2(x, y) :: x !== y
 ### $.gt2(x, y) :: x > y
 ### $.lt2(x, y) :: x < y
 ### $.gte2(x, y) :: x >= y
@@ -187,7 +187,7 @@ strings.
 ### $.gt(y) :: (x -> x > y)
 ### $.lt(y) :: (x -> x < y)
 ### $.eq(y) :: (x -> x === y)
-### $.weq(y) :: (x -> x == y)
+### $.neq(y) :: (x -> x !== y)
 ### $.gte(y) :: (x -> x >= y)
 ### $.lte(y) :: (x -> x <= y)
 
@@ -340,11 +340,13 @@ $.flatten([ [1,3,2], [2,[3],2] , [1] ]); // [ 1, 3, 2, 2, [ 3 ], 2, 1 ]
 ````
 
 ### $.and(xs) :: Boolean
-Like `$.any`, but takes a list of elements to be chained together with `&&`.
+Like `$.any`, but takes an array of boolean-like elements
+to be chained together with `&&`.
 
 
 ### $.or(xs) :: Boolean
-Like `$.or`, but takes an array of elements to be chained together with `||`.
+Like `$.or`, but takes an array of boolean-like elements
+to be chained together with `||`.
 
 
 ## Variadic Functions
@@ -388,7 +390,7 @@ A lifted version of `$.sequence`. Takes an array of functions.
 
 ## Functional Getters/Setters
 ### $.get(prop) :: (el -> el[prop])
-Very useful helper for extracting a property on an array of objects.
+Allows simple property extraction on an element. Useful for mapping
 
 ````javascript
 var objs = [{id: 1, s: "h"}, {id: 2, s: "e"}, {id: 3, s: "y"}];
@@ -405,6 +407,16 @@ var objs = [
 , {id: 3, s: "y", obj: {ary: [5,6]} }
 ];
 objs.map($.get('obj.ary.1')); // [ 2, 4, 6 ]
+````
+
+If a property is undefined on an element (or something is, in the middle
+of a deep property search), undefined is returned.
+To only get the defined values; filter by `$.neq()`,
+or `$.neq(/*undefined*/)` to be explicit.
+
+````javascript
+[{a:5}, {}].map($.get('a')); // [ 5, undefined ]
+[{a:5}, {}].map($.get('a')).filter($.neq()); // [ 5 ]
 ````
 
 ### $.set(prop) :: (el, value -> el)
@@ -424,6 +436,7 @@ Since `$.set` only sets properties on existing object,
 **the object returned is the same as the object passed in**,
 but on return it has new/updated properties.
 
+
 ### $.collect(prop, xs) :: ys
 Behaviourally equivalent to `xs.map($.get(prop))`, but more direct.
 
@@ -434,6 +447,11 @@ $.collect('length', [ [1,3,2],  [2], [1,2] ]); // [3,1,2]
 ### $.inject(prop, fn) :: (xs -> xs)
 Updates `xs[i][prop] = fn(xs[i])` for all i and returns the modified array.
 
+````javascript
+var objs = [{id:1}, {id:2}];
+$.inject('prop1', $.constant(5))();
+// [ {id:1, prop1: 5}, {id:2, prop1: 5}]|
+````
 ## Zipping
 A veritable corner stone of Functional Programming made dynamic, and
 now work for any number of lists!

@@ -139,7 +139,6 @@ exports["test#get/set"] = function () {
 
   a.eql([[1],[2],[3]].map($.get(0)), [1,2,3], "ary.map($.get(0))");
   a.eql($.collect(0, [[1],[2],[3]]), [1,2,3], "$.collect(0, ary))");
-  a.eql($.collect(0) ([[1],[2],[3]]), [1,2,3], "$.collect(0)(ary))");
   // set
   var obj = {};
   $.set('a')(obj, 3);

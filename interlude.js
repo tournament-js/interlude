@@ -126,6 +126,10 @@ $.eq2 = function (x, y) {
   return x === y;
 };
 
+$.neq2 = function (x, y) {
+  return x !== y;
+};
+
 $.weq2 = function (x, y) {
   return x == y;
 };
@@ -201,6 +205,13 @@ $.lt = function (a) {
 $.eq = function (a) {
   return function (b) {
     return b === a;
+  };
+};
+
+// shortcut for not eq
+$.neq = function (a) {
+  return function (b) {
+    return b !== a;
   };
 };
 
@@ -458,28 +469,25 @@ $.get = function (prop) {
       var pos = el;
       for (var i = 0; i < props.length; i += 1) {
         pos = pos[props[i]];
+        if (pos === undefined) {
+          return;
+        }
       }
       return pos;
     }
   }
-  else {
-    return function (el) {
-      return el[prop];
-    };
-  }
+  return function (el) {
+    return el[prop];
+  };
 };
 
 // property get map -- equivalent to _.pluck or xs.map($.get('prop'))
-// works with both xs curried or included TODO: still do the curried one? slows the uncurried one..
 $.collect = function (prop, xs) {
-  var fn = function (ys) {
-    var result = [];
-    for (var i = 0; i < ys.length; i += 1) {
-      result[i] = ys[i][prop];
-    }
-    return result;
-  };
-  return (xs == null) ? fn : fn(xs);
+  var result = [];
+  for (var i = 0; i < xs.length; i += 1) {
+    result[i] = xs[i][prop];
+  }
+  return result;
 };
 
 // curried this way so it can be zipped with, i.e.:
