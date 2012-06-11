@@ -28,8 +28,8 @@ $.has = function (obj, key) {
 // can sometimes be useful to compose with
 $.not = function (fn) {
   return function (x) {
-    return !fn(x)
-  }
+    return !fn(x);
+  };
 };
 
 // any/all/none are more useful for reverse currying every/some than unlifting and/or
@@ -287,9 +287,9 @@ $.comparing = function () {
   var args = slice.call(arguments, 0);
   return function (x, y) {
     for (var i = 0; i < args.length; i += 2) {
-      var factor = -parseInt((args[i+1] || '-') + 1); // => 1 by default
+      var factor = -parseInt((args[i + 1] || '-') + 1); // => 1 by default
       if (x[args[i]] !== y[args[i]]) {
-        return factor*(x[args[i]] - y[args[i]]);
+        return factor * (x[args[i]] - y[args[i]]);
       }
     }
     return 0;
@@ -463,7 +463,7 @@ $.get = function (prop) {
         }
       }
       return pos;
-    }
+    };
   }
   return function (el) {
     return el[prop];
@@ -692,28 +692,6 @@ $.groupBy = function (eq, xs) {
   return result;
 };
 
-$.unionBy = function (eq, xs, ys) {
-  var delBy = function (ys, y) {
-    return $.deleteBy(eq, ys, y);
-  };
-  return xs.concat(xs.reduce(delBy, $.nubBy(eq, ys)));
-};
-
-$.union = function (xs, ys) {
-  return xs.concat(xs.reduce($.delete, $.nub(ys)));
-};
-
-$.differenceBy = function (eq, xs, ys) {
-  var delBy = function (ys, y) {
-    return $.deleteBy(eq, ys, y);
-  };
-  return ys.reduce(delBy, xs.slice()); // reduce a copy
-};
-
-$.difference = function (xs, ys) {
-  return ys.reduce($.delete, xs.slice());
-};
-
 $.insertBy = function (cmp, xs, x) {
   for (var i = 0; i < xs.length; i += 1) {
     if (cmp(xs[i], x) >= 0) {
@@ -746,6 +724,28 @@ $.delete = function (xs, x) {
     xs.splice(idx, 1);
   }
   return xs;
+};
+
+$.unionBy = function (eq, xs, ys) {
+  var delBy = function (ys, y) {
+    return $.deleteBy(eq, ys, y);
+  };
+  return xs.concat(xs.reduce(delBy, $.nubBy(eq, ys)));
+};
+
+$.union = function (xs, ys) {
+  return xs.concat(xs.reduce($.delete, $.nub(ys)));
+};
+
+$.differenceBy = function (eq, xs, ys) {
+  var delBy = function (ys, y) {
+    return $.deleteBy(eq, ys, y);
+  };
+  return ys.reduce(delBy, xs.slice()); // reduce a copy
+};
+
+$.difference = function (xs, ys) {
+  return ys.reduce($.delete, xs.slice());
 };
 
 // ---------------------------------------------
