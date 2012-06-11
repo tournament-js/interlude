@@ -3,7 +3,7 @@ var slice = Array.prototype.slice
   , $ = {};
 
 // ---------------------------------------------
-// common
+// Functional Helpers
 // ---------------------------------------------
 $.id = function (x) {
   return x;
@@ -51,6 +51,18 @@ $.none = function (fn) {
   };
 };
 
+$.elem = function (xs) {
+  return function (x) {
+    return xs.indexOf(x) >= 0;
+  };
+};
+
+$.notElem = function (xs) {
+  return function (x) {
+    return xs.indexOf(x) < 0;
+  };
+};
+
 // ---------------------------------------------
 // Math
 // ---------------------------------------------
@@ -95,7 +107,7 @@ $.odd = function (n) {
 };
 
 // ---------------------------------------------
-// uncurried binary operators
+// binary operators
 // ---------------------------------------------
 
 $.add2 = function (x, y) {
@@ -108,6 +120,18 @@ $.subtract2 = function (x, y) {
 
 $.multiply2 = function (x, y) {
   return x * y;
+};
+
+$.divide2 = function (x, y) {
+  return x / y;
+};
+
+$.append2 = function (xs, ys) {
+  return ys.concat(xs);
+};
+
+$.prepend2 = function (xs, ys) {
+  return xs.concat(ys);
 };
 
 $.concat2 = function (xs, ys) {
@@ -128,10 +152,6 @@ $.eq2 = function (x, y) {
 
 $.neq2 = function (x, y) {
   return x !== y;
-};
-
-$.weq2 = function (x, y) {
-  return x == y;
 };
 
 $.gt2 = function (x, y) {
@@ -208,17 +228,9 @@ $.eq = function (a) {
   };
 };
 
-// shortcut for not eq
 $.neq = function (a) {
   return function (b) {
     return b !== a;
-  };
-};
-
-// weak eq
-$.weq = function (a) {
-  return function (b) {
-    return b == a;
   };
 };
 
@@ -287,28 +299,6 @@ $.comparing = function () {
 // the measure is not even a simple GT/EQ/LT and the size of numbers do not mean anything
 // therefore having such a version would just encourage a bad style that would be easiest
 
-
-// ---------------------------------------------
-// Membership
-// ---------------------------------------------
-
-$.elem = function (xs) {
-  return function (x) {
-    return xs.indexOf(x) >= 0;
-  };
-};
-
-$.notElem = function (xs) {
-  return function (x) {
-    return xs.indexOf(x) < 0;
-  };
-};
-
-// allows stuff like
-// [1,2,3,4,3].filter($.elem([1,3]))  -> [1,3,3]
-// [1,2,3,4,3].filter($.notElem[1,3]) -> [2,4]
-
-
 // ---------------------------------------------
 // Higher order looping
 // ---------------------------------------------
@@ -344,8 +334,7 @@ $.iterate = function (times, fn) {
 };
 
 // DO NOT FOLD WITH VARIADIC FUNCTIONS!
-// Instead use binary uncurried operators (also more efficient)
-// fold - Array::reduce with array curried
+// Instead use binary (uncurried) operators (also more efficient)
 $.fold = function (fn, initial) {
   return function (xs) {
     return xs.reduce(fn, initial);
@@ -481,8 +470,8 @@ $.get = function (prop) {
   };
 };
 
-// property get map -- equivalent to _.pluck or xs.map($.get('prop'))
-$.collect = function (prop, xs) {
+// property accessor map -- equivalent to _.pluck or xs.map($.get('prop'))
+$.pluck = function (prop, xs) {
   var result = [];
   for (var i = 0; i < xs.length; i += 1) {
     result[i] = xs[i][prop];
@@ -493,24 +482,13 @@ $.collect = function (prop, xs) {
 // curried this way so it can be zipped with, i.e.:
 // $.zipWith($.set('prop'), elList, valList);
 // if you wanted to do all three arguments in one, you'd just do a normal assign
-$.set = function (prop) {
-  return function (el, value) {
+$.set = function (prop, value) {
+  var fn = function (el) {
     el[prop] = value;
     return el;
   };
 };
 
-// property set map -- equivalent to xs.map($.set('prop'))
-// modify a list of objects by setting propName on all objects to valFn(currObj)
-// can use $.inject('prop1', $.constant(5))([{}, {a:2}]) -> [{prop1:5}, {a:2, prop1: 5}]|
-$.inject = function (prop, valFn) {
-  return function (xs) {
-    for (var i = 0; i < xs.length; i += 1) {
-      xs[i][prop] = valFn(xs[i]);
-    }
-    return xs;
-  };
-};
 
 // ---------------------------------------------
 // zipWith / zip
@@ -525,7 +503,7 @@ $.zipWith = function () {
     , args = slice.call(arguments, 1)
     , numLists = args.length
     , results = []
-    , len = $.minimum($.collect('length', args));
+    , len = $.minimum($.pluck('length', args));
 
   for (var i = 0; i < len; i += 1) {
     var els = [];
@@ -543,7 +521,7 @@ $.zipWith = function () {
 $.zip = function () {
   var numLists = arguments.length
     , results = []
-    , len = $.minimum($.collect('length', arguments));
+    , len = $.minimum($.pluck('length', arguments));
 
   for (var i = 0; i < len; i += 1) {
     var els = [];
@@ -633,38 +611,14 @@ $.trace = function (fn, fnName) {
 // ---------------------------------------------
 // List operations
 // ---------------------------------------------
-
-// assumes xs sorted, insert x at next step
-// equivalent to $.insertBy($.subtract2, ..)
-$.insert = function (xs, x) {
-  for (var i = xs.length - 1; i >= 0; i -= 1) {
-    if (x >= xs[i]) { // gte(0) . subtract2(x, xs[i])
-      xs.splice(i + 1, 0, x);
-      return xs;
-    }
-  }
-  xs.unshift(x);
-  return xs;
-};
-
-// $.insertBy($.comparing(prop)) is good
-$.insertBy = function (cmp, xs, x) {
-  for (var i = xs.length - 1; i >= 0; i -= 1) {
-    if (cmp(x, xs[i]) >= 0) {
-      xs.splice(i + 1, 0, x);
-      return xs;
-    }
-  }
-  xs.unshift(x);
-  return xs;
-};
+// the following functions are basically dependency free
+// apart from $.eq2, but really needs $.equality2 for efficient testing of both
 
 // $.partition($.equality(0)([2]), [[1], [2], [3], [2]])
 $.partition = function (fn, xs) {
   return [xs.filter(fn), xs.filter($.not(fn))];
 };
 
-// needs double curried $.equality
 $.intersectBy = function (eq, xs, ys) {
   var result = [];
   if (xs.length && ys.length) {
@@ -705,17 +659,14 @@ $.nubBy = function (eq, xs) {
   var result = []
     , resLen = 0
     , len = xs.length;
-
   for (var i = 0; i < len; i += 1) {
     var keep = true;
-
     for (var j = 0; j < resLen; j += 1) {
       if (eq(xs[j], xs[i])) {
         keep = false;
         break;
       }
     }
-
     if (keep) {
       result.push(xs[i]);
       resLen += 1;
@@ -741,30 +692,61 @@ $.groupBy = function (eq, xs) {
   return result;
 };
 
-// deletes everything the equality test finds equal to x
-$.deleteBy = function (eq, xs, x) {
-  var result = [];
+$.unionBy = function (eq, xs, ys) {
+  var delBy = function (ys, y) {
+    return $.deleteBy(eq, ys, y);
+  };
+  return xs.concat(xs.reduce(delBy, $.nubBy(eq, ys)));
+};
+
+$.union = function (xs, ys) {
+  return xs.concat(xs.reduce($.delete, $.nub(ys)));
+};
+
+$.differenceBy = function (eq, xs, ys) {
+  var delBy = function (ys, y) {
+    return $.deleteBy(eq, ys, y);
+  };
+  return ys.reduce(delBy, xs.slice()); // reduce a copy
+};
+
+$.difference = function (xs, ys) {
+  return ys.reduce($.delete, xs.slice());
+};
+
+$.insertBy = function (cmp, xs, x) {
   for (var i = 0; i < xs.length; i += 1) {
-    if (!eq(x, xs[i])) {
-      result.push(xs[i]);
+    if (cmp(xs[i], x) >= 0) {
+      xs.splice(i, 0, x);
+      return xs;
     }
   }
-  return result;
+  xs.push(x);
+  return xs;
 };
 
+$.insert = function (xs, x) {
+  return $.insertBy($.subtract2, xs, x);
+};
+
+$.deleteBy = function (eq, xs, x) {
+  for (var i = 0; i < xs.length; i += 1) {
+    if (eq(xs[i], x)) {
+      xs.splice(i, 1);
+      return xs;
+    }
+  }
+  return xs;
+};
+
+// behaviourally equivalent to $.deleteBy($.eq2, xs, x)
 $.delete = function (xs, x) {
-  return $.deleteBy($.eq2, xs, x);
+  var idx = xs.indexOf(x);
+  if (idx >= 0) {
+    xs.splice(idx, 1);
+  }
+  return xs;
 };
-
-$.unionBy = function (eq, xs, ys) {
-  return xs.concat($.fold($.curry($.deleteBy, eq), $.nubBy(eq, ys))(xs));
-};
-
-// functionally === $.unionBy($.eq2, xs, ys);
-$.union = function (xs, ys) {
-  return xs.concat($.fold($.delete, $.nub(ys))(xs));
-};
-
 
 // ---------------------------------------------
 // maybe do some string things

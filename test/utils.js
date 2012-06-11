@@ -37,8 +37,6 @@ exports['test#uncurried binary ops'] = function () {
 
   a.equal($.eq2(1,1), true, "1 === 1");
   a.equal($.eq2(1,"1"), false, "1 === '1'");
-  a.equal($.weq2(1,"1"), true, "1 == '1'");
-  a.equal($.weq2(1,1), true, "1 == 1");
   a.equal($.gt2(3,2), true, "3 > 2");
   a.equal($.gt2(3,3), false, "3 ! > 2");
   a.equal($.lt2(2,3), true, "2 < 3");
@@ -89,12 +87,12 @@ exports["test#lifted functions"] = function () {
 
   var mbRes = $.maximumBy($.get('length'), [ [1,3,2], [2], [2,3] ]);
   a.eql(mbRes, [1,3,2], 'maxBy returns the element for which length is maximal');
-  var collectRes = $.maximum($.collect('length', [ [1,3,2], [2], [2,3] ]));
+  var collectRes = $.maximum($.pluck('length', [ [1,3,2], [2], [2,3] ]));
   a.equal(collectRes, 3, "maximum of collects simply returns the value");
 
   var mbRes = $.minimumBy($.get('length'), [ [1,3,2], [2], [2,3] ]);
   a.eql(mbRes, [2], 'minBy returns the element for which length is maximal');
-  var collectRes = $.minimum($.collect('length', [ [1,3,2], [2], [2,3] ]));
+  var collectRes = $.minimum($.pluck('length', [ [1,3,2], [2], [2,3] ]));
   a.equal(collectRes, 1, "minymum of collects simply returns the value");
 
   a.equal($.add(1,2,3,4), 10, "add(1,2,3,4) === 10");
@@ -138,19 +136,8 @@ exports["test#get/set"] = function () {
   a.eql(objs.map($.get('obj.ary.1')), [ 2, 4, 6 ], "deep get on objs.obj.ary.1");
 
   a.eql([[1],[2],[3]].map($.get(0)), [1,2,3], "ary.map($.get(0))");
-  a.eql($.collect(0, [[1],[2],[3]]), [1,2,3], "$.collect(0, ary))");
-  // set
-  var obj = {};
-  $.set('a')(obj, 3);
-  a.equal(obj.a, 3, "$.set simple");
-  var objs = [{}, {a : 2}];
-  $.zipWith($.set('a'), objs, [5,5]);
-  a.equal(objs[0].a, 5, "$.set via zipWith");
-  a.equal(objs[1].a, 5, "$.set via zipWith");
+  a.eql($.pluck(0, [[1],[2],[3]]), [1,2,3], "$.pluck(0, ary))");
 
-  $.inject('c', $.constant(3))(objs);
-  a.equal(objs[0].c, 3, "$.inject constant 3 on prop 'c'");
-  a.equal(objs[1].c, 3, "$.inject constant 3 on prop 'c'");
 };
 
 exports["test#zipWith/zip"] = function () {
@@ -179,9 +166,6 @@ exports["test#ordering"] = function () {
 
   a.equal($.eq(5)(5), true, "5 === 5");
   a.equal($.lt(5)('5'), false, "5 !== '5'");
-
-  a.equal($.weq(5)(5), true, "5 == 5");
-  a.equal($.weq(5)('5'), true, "5 == '5'");
 
   // compare
   a.eql([[1,3],[1,2],[1,5]].sort($.comparing(1)), [[1,2],[1,3],[1,5]], "comparing");
@@ -225,8 +209,14 @@ exports["test#list operations"] = function () {
 
   var res = $.deleteBy($.equality2(1), [[1,3],[2,1],[1,4]], [5,1]);
   a.eql(res, [[1,3], [1,4]], "delete by equality(1)");
+
+  var res = $.deleteBy($.equality2(0), [[1,3],[2,1],[1,4]], [1,999]);
+  a.eql(res, [[2,1], [1,4]], "delete by equality(0) removes only first");
+
   a.eql($.delete($.range(5), 5), $.range(4), "delete from range");
   a.eql($.delete($.range(3), 2), [1,3], "delete from small range");
+  a.eql($.delete([1,1,2,2], 2), [1,1,2], "delete from duplicate list");
+  a.eql($.delete([1,1,2,2], 1), [1,2,2], "delete from duplicate list");
 
   a.eql($.nub([2,3,7,5]), [2,3,7,5], "nub on unique");
   a.eql($.nubBy($.eq2, [2,3,7,5]), [2,3,7,5], "nub on unique");
@@ -243,22 +233,28 @@ exports["test#list operations"] = function () {
   a.eql($.nubBy(notCoprime, $.range(2, 11)), [2,3,5,7,11], "primes nubBy");
 
   a.eql($.union([1,3,2,4], [2,3,7,5]), [1,3,2,4,7,5], "union");
-  var res = $.collect(1, $.unionBy($.equality2(1)
+  var res = $.pluck(1, $.unionBy($.equality2(1)
     , [[0,1],[0,3],[0,2],[0,4]]
     , [[0,2],[0,3],[0,7],[0,5]]
   ));
   a.eql(res, [1,3,2,4,7,5], "unionBy eq(1) works equally well");
 
+  a.eql($.difference([1,2,2,3,4], [1,2,3]), [2,4], "difference simple");
+  var xs = $.range(5);
+  var ys = $.range(3)
+  a.eql($.difference(ys.concat(xs), ys), xs, "difference prop");
 
-  a.equal($.nub("hitherehandsome").join(''), 'hiterandsom', "can nub strings");
-  a.equal($.delete("hitherehandsome", 'h').join(''), 'itereandsome', "delete strs");
+  var res = $.differenceBy($.equality2('a')
+    , [{a:1}, {a:2}, {a:3}]
+    , [{a:2, b:1}, {a:4, b:2}]
+  );
+  a.eql(res, [{a:1}, {a:3}], "differenceBy");
 
   a.eql($.group([1,3,3,2,4,4]), [[1],[3,3],[2],[4,4]], "basic group");
   a.eql($.group([1,1,1,1]), [[1,1,1,1]], "basic group ones");
 
   var res = $.groupBy($.equality2(1), [[1,3],[2,1],[4,1],[2,3]]);
   a.eql(res, [ [[1,3]], [[2,1],[4,1]], [[2,3]] ], "groupBy equality on 1");
-
 };
 
 
