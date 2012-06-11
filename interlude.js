@@ -491,49 +491,6 @@ $.set = function (prop, value) {
 
 
 // ---------------------------------------------
-// zipWith / zip
-// ---------------------------------------------
-
-// can act as zipWith, zipWith3, zipWith4...
-// zipper function must have the same number of arguments as there are lists
-// but beyond that, it's very dynamic
-// zipWith(function(x,y,z){return x+y+z;}, [1,3,2], [21,1], [2,3]) -> [24,7]
-$.zipWith = function () {
-  var fn = arguments[0]
-    , args = slice.call(arguments, 1)
-    , numLists = args.length
-    , results = []
-    , len = $.minimum($.pluck('length', args));
-
-  for (var i = 0; i < len; i += 1) {
-    var els = [];
-    for (var j = 0; j < numLists; j += 1) {
-      els.push(args[j][i]);
-    }
-    results.push(fn.apply(null, els));
-  }
-  return results;
-};
-
-// zip, zip3, zip4.. all in one!
-// inlining quite a bit faster: http://jsperf.com/inlinezip3
-// then not slicing helps too: http://jsperf.com/tosliceornottoslice5
-$.zip = function () {
-  var numLists = arguments.length
-    , results = []
-    , len = $.minimum($.pluck('length', arguments));
-
-  for (var i = 0; i < len; i += 1) {
-    var els = [];
-    for (var j = 0; j < numLists; j += 1) {
-      els.push(arguments[j][i]);
-    }
-    results.push(els);
-  }
-  return results;
-};
-
-// ---------------------------------------------
 // Function Wrappers
 // ---------------------------------------------
 
@@ -613,6 +570,44 @@ $.trace = function (fn, fnName) {
 // ---------------------------------------------
 // the following functions are basically dependency free
 // apart from $.eq2, but really needs $.equality2 for efficient testing of both
+
+// can act as zipWith, zipWith3, zipWith4...
+// zipper function must have the same number of arguments as there are lists
+// but beyond that, it's very dynamic
+$.zipWith = function () {
+  var fn = arguments[0]
+    , args = slice.call(arguments, 1)
+    , numLists = args.length
+    , results = []
+    , len = $.minimum($.pluck('length', args));
+
+  for (var i = 0; i < len; i += 1) {
+    var els = [];
+    for (var j = 0; j < numLists; j += 1) {
+      els.push(args[j][i]);
+    }
+    results.push(fn.apply(null, els));
+  }
+  return results;
+};
+
+// zip, zip3, zip4.. all in one!
+// inlining quite a bit faster: http://jsperf.com/inlinezip3
+// then not slicing helps too: http://jsperf.com/tosliceornottoslice5
+$.zip = function () {
+  var numLists = arguments.length
+    , results = []
+    , len = $.minimum($.pluck('length', arguments));
+
+  for (var i = 0; i < len; i += 1) {
+    var els = [];
+    for (var j = 0; j < numLists; j += 1) {
+      els.push(arguments[j][i]);
+    }
+    results.push(els);
+  }
+  return results;
+};
 
 // $.partition($.equality(0)([2]), [[1], [2], [3], [2]])
 $.partition = function (fn, xs) {

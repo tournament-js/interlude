@@ -446,13 +446,14 @@ scan deeply wheras this is does a quick iteration without extra function calls.
 $.collect('length', [ [1,3,2],  [2], [1,2] ]); // [3,1,2]
 ````
 
-## Zipping
-A veritable corner stone of Functional Programming made dynamic, and
-now work for any number of arrays!
+## List Operations
+Dynamic Data.List. Many of these functions (somewhat remarkably) work on strings
+as arrays.
 
 ### $.zip(xs, ys [, zs [, ..]]) :: ls
-Returns an array of arrays extracted from the input arrays, by joining them on
-array index. The shortest array will limit the length of the return.
+zip takes n arrays and returns an array of n length arrays by
+joining the input arrays on index.
+If any input array is short, excess elements of the longer arrays are discarded.
 
 ````javascript
 $.zip([1,2,3], [2,2,2]); // [ [1,2], [2,2], [3,2] ]
@@ -463,34 +464,31 @@ $.zip($.range(5), [1,2], [3,2,5]); // [ [1,1,3], [2,2,2] ]
 Same as `$.zip`, but applies each result array to `fn`,
 and collects these results rather.
 
+zipWith generalises zip by zipping with the function given as the first argument,
+instead of a collecting the elements.
+For example, $.zipWith($.add2, xs, ys) is applied to two arrays to produce
+the array of corresponding sums.
+
 ````javascript
 $.zipWith($.multiply, [2,2,2], [1,0,1], [1,2,3]); // [ 2, 0, 6 ]
 $.zipWith($.plus2, [1,1,1], $.range(5)); // [2, 3, 4]
 ````
 
-zipWith can also be used for updating information on arrays of objects:
+zipWith can also be used for fusing two lists:
 
 ````
-$.extend = function (def, upd) {
-  Object.keys(upd).map(function (key) {
-    def[key] = upd[key];
-  });
-}
-
 var vals = ["Peter", "Bam", "Jo"];
 var items = [{id:1}, {id:2}, {id:3}];
 var nameSetter = function (el, value) {
   el.name = value;
 };
 $.zipWith(nameSetter, items, vals);
+items;
 // [ { id: 1, name: 'Peter' },
 //   { id: 2, name: 'Bam' },
 //   { id: 3, name: 'Jo' } ]
 ````
 
-## List Operations
-Dynamic Data.List. Many of these functions (somewhat remarkably) work on strings
-as arrays.
 
 ### $.partition(fn, xs) :: [ys, zs]
 The `partition` function takes a predicate, an array and returns
