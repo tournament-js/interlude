@@ -1,6 +1,6 @@
 var slice = Array.prototype.slice
   , hasOwnProp = Object.prototype.hasOwnProperty
-  , $ = {};
+  , $ = require('./operators');
 
 // ---------------------------------------------
 // Functional Helpers
@@ -32,7 +32,7 @@ $.not = function (fn) {
   };
 };
 
-// any/all/none are more useful for reverse currying every/some than unlifting and/or
+// any/all/none are more useful as fn currying for every/some than unlifting and/or
 $.all = function (fn) {
   return function (xs) {
     return xs.every(fn);
@@ -107,199 +107,6 @@ $.odd = function (n) {
 };
 
 // ---------------------------------------------
-// binary operators
-// ---------------------------------------------
-
-$.add2 = function (x, y) {
-  return x + y;
-};
-
-$.subtract2 = function (x, y) {
-  return x - y;
-};
-
-$.multiply2 = function (x, y) {
-  return x * y;
-};
-
-$.divide2 = function (x, y) {
-  return x / y;
-};
-
-$.append2 = function (xs, ys) {
-  return ys.concat(xs);
-};
-
-$.prepend2 = function (xs, ys) {
-  return xs.concat(ys);
-};
-
-$.concat2 = function (xs, ys) {
-  return xs.concat(ys);
-};
-
-$.and2 = function (x, y) {
-  return x && y;
-};
-
-$.or2 = function (x, y) {
-  return x || y;
-};
-
-$.eq2 = function (x, y) {
-  return x === y;
-};
-
-$.neq2 = function (x, y) {
-  return x !== y;
-};
-
-$.gt2 = function (x, y) {
-  return x > y;
-};
-
-$.lt2 = function (x, y) {
-  return x < y;
-};
-
-$.gte2 = function (x, y) {
-  return x >= y;
-};
-
-$.lte2 = function (x, y) {
-  return x <= y;
-};
-
-// ---------------------------------------------
-// curried binary operations
-// ---------------------------------------------
-
-$.plus = function (x) {
-  return function (y) {
-    return y + x;
-  };
-};
-
-$.subtract = function (x) {
-  return function (y) {
-    return y - x;
-  };
-};
-
-$.times = function (x) {
-  return function (y) {
-    return y * x;
-  };
-};
-
-$.divide = function (x) {
-  return function (y) {
-    return y / x;
-  };
-};
-
-$.append = function (xs) {
-  return function (ys) {
-    return ys.concat(xs);
-  };
-};
-
-$.prepend = function (xs) {
-  return function (ys) {
-    return xs.concat(ys);
-  };
-};
-
-$.gt = function (a) {
-  return function (b) {
-    return b > a;
-  };
-};
-
-$.lt = function (a) {
-  return function (b) {
-    return b < a;
-  };
-};
-
-$.eq = function (a) {
-  return function (b) {
-    return b === a;
-  };
-};
-
-$.neq = function (a) {
-  return function (b) {
-    return b !== a;
-  };
-};
-
-$.gte = function (a) {
-  return function (b) {
-    return b >= a;
-  };
-};
-
-$.lte = function (a) {
-  return function (b) {
-    return b <= a;
-  };
-};
-
-// ---------------------------------------------
-// Special ordering and equality (both versions)
-// ---------------------------------------------
-
-// what equality means for generalized functions can be created with $.equality
-// takes what to count as equality first, then x, then y
-// partition takes it curried to up to y, intersect partitioned up to x and y
-// can make custom equality functions that does not simply get one property by:
-// $.compose($.eq, $.get(0)) and replacing $.get with a function of choice
-$.equality2 = function () {
-  var pargs = slice.call(arguments, 0);
-  return function (x, y) {
-    for (var i = 0; i < pargs.length; i += 1) {
-      if (x[pargs[i]] !== y[pargs[i]]) {
-        return false;
-      }
-    }
-    return true;
-  };
-};
-
-// double curried version of $.equality2 to use in filters and $.partition
-$.equality = function () {
-  var pargs = slice.call(arguments, 0);
-  return function (y) {
-    return function (x) {
-      for (var i = 0; i < pargs.length; i += 1) {
-        if (x[pargs[i]] !== y[pargs[i]]) {
-          return false;
-        }
-      }
-      return true;
-    };
-  };
-};
-
-// result of this can be passed directly to Array::sort
-$.comparing = function () {
-  var args = slice.call(arguments, 0);
-  return function (x, y) {
-    for (var i = 0; i < args.length; i += 2) {
-      var factor = -parseInt((args[i + 1] || '-') + 1); // => 1 by default
-      if (x[args[i]] !== y[args[i]]) {
-        return factor * (x[args[i]] - y[args[i]]);
-      }
-    }
-    return 0;
-  };
-};
-// no double curried version of this, it makes little sense to have
-// the measure is not even a simple GT/EQ/LT and the size of numbers do not mean anything
-// therefore having such a version would just encourage a bad style that would be easiest
-
-// ---------------------------------------------
 // Higher order looping
 // ---------------------------------------------
 
@@ -353,62 +160,58 @@ $.scan = function (fn, initial) {
   };
 };
 
-// ---------------------------------------------
-// lifts and unlifts
-// ---------------------------------------------
-
-// multi param function f -> single array fn
-// this is the inverse of unlift
-$.lift = function (fn, context) {
+$.map = function (fn) {
   return function (xs) {
-    return fn.apply(context, xs);
+    return xs.map(fn);
   };
 };
 
-// take a function operating on an array and turn it into a multi-parameter function, inverse of lift
-// because argument based functions are semantic tand is most sensible with zipWith
-$.unlift = function (fn, context) {
-  return function () {
-    var args = slice.call(arguments, 0);
-    return fn.apply(context, [args]);
+$.filter = function (fn) {
+  return function (xs) {
+    return xs.filter(fn);
   };
 };
 
+
 // ---------------------------------------------
-// binary operators folded over lists
+// Comparison
 // ---------------------------------------------
 
-// follows the "take the" fnName of list semantic
-// max/min already have unlifted variadic counterparts so they can simply be lifted
-// rather than folding over a two parameter arg
-$.maximum = $.lift(Math.max, Math);
-$.minimum = $.lift(Math.min, Math);
-
-
-// generalized versions:
-$.maximumBy = function (fn, xs) {
-  var res = xs.map(fn)
-    , idx = res.indexOf($.maximum(res));
-  return xs[idx];
+$.equality = function () {
+  var pargs = arguments;
+  return function (x, y) {
+    for (var i = 0; i < pargs.length; i += 1) {
+      if (x[pargs[i]] !== y[pargs[i]]) {
+        return false;
+      }
+    }
+    return true;
+  };
 };
 
-$.minimumBy = function (fn, xs) {
-  var res = xs.map(fn)
-    , idx = res.indexOf($.minimum(res));
-  return xs[idx];
+$.compare = function (dir) {
+  var factor = parseInt((dir || '+') + 1); // => 1 by default
+  return function (x, y) {
+    return factor * (x - y);
+  };
 };
 
-// using fold with binary operators to give lifted functions
-$.sum = $.fold($.add2, 0);
-$.product = $.fold($.multiply2, 1);
-$.flatten = $.fold($.concat2, []);
-$.and = $.fold($.and2, true);
-$.or = $.fold($.or2, false);
-
-// variadic versions => can be used with zipWith for any number of lists
-$.add = $.unlift($.sum);
-$.multiply = $.unlift($.product);
-$.concat = $.unlift($.flatten);
+// result of this can be passed directly to Array::sort
+$.comparing = function () {
+  var args = slice.call(arguments, 0);
+  return function (x, y) {
+    for (var i = 0; i < args.length; i += 2) {
+      var factor = parseInt((args[i + 1] || '+') + 1); // => 1 by default
+      if (x[args[i]] !== y[args[i]]) {
+        return factor * (x[args[i]] - y[args[i]]);
+      }
+    }
+    return 0;
+  };
+};
+// no double curried version of this, it makes little sense to have
+// the measure is not even a simple GT/EQ/LT and the size of numbers do not mean anything
+// therefore having such a version would just encourage a bad style that would be easiest
 
 // ---------------------------------------------
 // compositions and sequencing
@@ -441,16 +244,11 @@ $.sequence = function (/*fns...*/) {
   };
 };
 
-// and their list equivalents:
-$.composition = $.lift($.compose);
-$.pipeline = $.lift($.sequence);
-
 // ---------------------------------------------
-// Getters/setters
+// Property accessors
 // ---------------------------------------------
 
-// simple proprety accessor
-// can also be used for array number accessor
+// (potentially) deep diving proprety accessor
 $.get = function (prop) {
   if (/\./.test(prop)) {
     var props = prop.split('.');
@@ -471,6 +269,7 @@ $.get = function (prop) {
 };
 
 // property accessor map -- equivalent to _.pluck or xs.map($.get('prop'))
+// but cannot go deep
 $.pluck = function (prop, xs) {
   var result = [];
   for (var i = 0; i < xs.length; i += 1) {
@@ -479,17 +278,6 @@ $.pluck = function (prop, xs) {
   return result;
 };
 
-// curried this way so it can be zipped with, i.e.:
-// $.zipWith($.set('prop'), elList, valList);
-// if you wanted to do all three arguments in one, you'd just do a normal assign
-$.set = function (prop, value) {
-  var fn = function (el) {
-    el[prop] = value;
-    return el;
-  };
-};
-
-
 // ---------------------------------------------
 // Function Wrappers
 // ---------------------------------------------
@@ -497,6 +285,7 @@ $.set = function (prop, value) {
 //TODO: throttle, debounce, once
 //TODO: clone, extend
 
+/*
 // Memoize an expensive function by storing its results in a proper hash.
 $.memoize = function (fn, hasher) {
   var memo = Object.create(null);
@@ -563,13 +352,38 @@ $.trace = function (fn, fnName) {
     return result;
   };
 };
+*/
 
+// ---------------------------------------------
+// lifted/unlifted/generalized binary operators
+// ---------------------------------------------
+
+$.maximum = function (xs) {
+  return Math.max.apply(Math, xs);
+};
+
+$.minimum = function (xs) {
+  return Math.min.apply(Math, xs);
+};
+
+// generalized versions:
+$.maximumBy = function (fn, xs) {
+  var res = xs.map(fn)
+    , idx = res.indexOf($.maximum(res));
+  return xs[idx];
+};
+
+$.minimumBy = function (fn, xs) {
+  var res = xs.map(fn)
+    , idx = res.indexOf($.minimum(res));
+  return xs[idx];
+};
 
 // ---------------------------------------------
 // List operations
 // ---------------------------------------------
 // the following functions are basically dependency free
-// apart from $.eq2, but really needs $.equality2 for efficient testing of both
+// apart from $.eq2, but really needs $.equality for efficient testing of both
 
 // can act as zipWith, zipWith3, zipWith4...
 // zipper function must have the same number of arguments as there are lists

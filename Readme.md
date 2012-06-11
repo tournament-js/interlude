@@ -47,7 +47,7 @@ $.iterate(8, $.times(2))(2);
 
 // Pascal's Triangle
 var pascalNext = function (row) {
-  return $.zipWith($.add2, row.concat(0), [0].concat(row));
+  return $.zipWith($.plus2, row.concat(0), [0].concat(row));
 }
 $.iterate(5, pascalNext)([1]);
 // [ [ 1 ]

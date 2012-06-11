@@ -23,9 +23,9 @@ exports['test#math'] = function () {
 };
 
 exports['test#uncurried binary ops'] = function () {
-  a.equal($.add2(3,2), 5, "2+3 === 5");
-  a.equal($.subtract2(3,2), 1, "3-2 === 1");
-  a.equal($.multiply2(3,5), 15, "5*3 === 15");
+  a.equal($.plus2(3,2), 5, "2+3 === 5");
+  a.equal($.minus2(3,2), 1, "3-2 === 1");
+  a.equal($.times2(3,5), 15, "5*3 === 15");
   a.equal($.and2(false, false), false, "false && false === false");
   a.equal($.and2(true, false), false, "true && false === false");
   a.equal($.and2(false, true), false, "false && true === false");
@@ -46,12 +46,12 @@ exports['test#uncurried binary ops'] = function () {
   a.equal($.lte2(2,2), true, "2 <= 2");
   a.equal($.lte2(2,1), false, "2 ! <= 1");
 
-  a.eql($.concat2([1,2], [3]), [1,2,3], "[1, 2].concat([3]) === [1, 2, 3]");
+  a.eql($.prepend2([1,2], [3]), [3,1,2], "prepend2([1, 2], [3]) === [3,1,2]");
 };
 
 exports['test#curried binary ops'] = function () {
   a.equal($.plus(3)(2), 5, "2+3 === 5");
-  a.equal($.subtract(3)(5), 2, "5-3 === 2");
+  a.equal($.minus(3)(5), 2, "5-3 === 2");
   a.equal($.times(2)(3), 6, "2*3 === 6");
   a.equal($.divide(2)(6), 3, "6/2 === 3");
   a.eql($.append([1,2])([3]), [3,1,2], "(++[1, 2]) [3] === [3, 1, 2]");
@@ -59,8 +59,8 @@ exports['test#curried binary ops'] = function () {
 };
 
 exports["test#higher order looping"] = function () {
-  a.equal($.fold($.add2, 5)([1,1,1]), 8, "fold add 5 + 1+1+1 === 8");
-  a.eql($.scan($.add2, 5)([1,1,1]), [5,6,7,8],"scan add 5 [1,1,1] === [5,6,7,8]");
+  a.equal($.fold($.plus2, 5)([1,1,1]), 8, "fold add 5 + 1+1+1 === 8");
+  a.eql($.scan($.plus2, 5)([1,1,1]), [5,6,7,8],"scan add 5 [1,1,1] === [5,6,7,8]");
   a.eql($.iterate(5, $.times(2))(2), [2,4,8,16,32], "iterate (*2)");
   a.eql($.range(1,5), $.range(5), "range 1 indexed");
   a.eql($.range(5), [1,2,3,4,5], "range inclusive");
@@ -74,10 +74,6 @@ exports["test#higher order looping"] = function () {
 exports["test#folded shortcuts"] = function () {
   a.equal($.sum([1,2,3,4]), 10, "sum [1,2,3,4] === 10");
   a.equal($.product([1,2,3,4]), 24, "product [1,2,3,4] === 24");
-  a.equal($.and([true, true, false]), false, "and [true, true, false] === false");
-  a.equal($.and([true, true, true]), true, "and [true, true, true] === true");
-  a.equal($.or([true, false, false]), true, "or [true, false, false] === true");
-  a.equal($.or([false, false, false]), false, "or [false, false, false] === false");
   a.eql($.flatten([[1,2,3],[4],[[5]]]), [1,2,3,4,[5]], "$.flatten");
 };
 
@@ -98,22 +94,12 @@ exports["test#lifted functions"] = function () {
   a.equal($.add(1,2,3,4), 10, "add(1,2,3,4) === 10");
   a.equal($.multiply(1,2,3,4), 24, "multiply(1,2,3,4) === 24");
   a.eql($.concat([1,2,3], [4], [[5]]), [1,2,3,4,[5]], "$.concat");
-
-
-
-  // lift unlift inverses
-  a.equal($.lift($.add)([1,2,3,4]), 10, "lift add [1,2,3,4] === 10");
-  a.equal($.unlift($.lift($.add))(1,2,3,4), 10, "unlift lift add (1,2,3,4)");
-  a.equal($.unlift($.sum)(1,2,3,4), 10, "unlift sum (1,2,3,4)");
-  a.equal($.lift($.unlift($.sum))([1,2,3,4]), 10, "lift unlift sum [1,2,3,4]");
 };
 
 
 exports["test#composition"] = function () {
-  a.equal($.compose($.times(2), $.plus(5), $.add2)(3,4), 24, "compose 3 fns");
-  a.equal($.sequence($.add2, $.plus(5), $.times(2))(3,4), 24, "compose 3 fns");
-  a.equal($.composition([$.times(2), $.plus(5), $.add2])(3,4), 24, "composition");
-  a.equal($.pipeline([$.add2, $.plus(5), $.times(2)])(3,4), 24, "pipeline");
+  a.equal($.compose($.times(2), $.plus(5), $.plus2)(3,4), 24, "compose 3 fns");
+  a.equal($.sequence($.plus2, $.plus(5), $.times(2))(3,4), 24, "compose 3 fns");
 };
 
 exports["test#get/set"] = function () {
@@ -141,7 +127,7 @@ exports["test#get/set"] = function () {
 };
 
 exports["test#zipWith/zip"] = function () {
-  a.eql($.zipWith($.add2, [1,3,5], [2,4]), [3, 7], "zipWith add2");
+  a.eql($.zipWith($.plus2, [1,3,5], [2,4]), [3, 7], "zipWith plus2");
   a.eql($.zipWith($.add, [1,3,5], [0,0,0], [2,4]), [3, 7], "zipWith add");
   a.eql($.zip([1,3,5], [2,4]), [[1,2], [3,4]], "zip 2 lists");
   a.eql($.zip([1,3,5], [0,0,0], [2,4]), [[1,0,2], [3,0,4]], "zip 3 lists");
@@ -172,19 +158,17 @@ exports["test#ordering"] = function () {
   a.eql([{a:2},{a:1}].sort($.comparing('a')), [{a:1}, {a:2}], "comparing objs");
 
   var money = [{id: 1, money: 3}, {id: 2, money: 0}, {id: 3, money: 3}];
-  var res = money.sort($.comparing('money', '+', 'id', '+'));
+  var res = money.sort($.comparing('money', '-', 'id', '-'));
   var resExp = [ { id: 3, money: 3 }, { id: 1, money: 3 }, { id: 2, money: 0 } ];
   a.eql(res, resExp, "money max first, then id max first");
 
-  var res = money.sort($.comparing('money', '+', 'id', '-'));
+  var res = money.sort($.comparing('money', '-', 'id', '+'));
   var resExp = [ { id: 1, money: 3 }, { id: 3, money: 3 }, { id: 2, money: 0 } ];
   a.eql(res, resExp, "money max first, then id min first");
 
-  var res = money.sort($.comparing('money', '+', 'id'));
+  var res = money.sort($.comparing('money', '-', 'id'));
   var resExp = [ { id: 1, money: 3 }, { id: 3, money: 3 }, { id: 2, money: 0 } ];
-  a.eql(res, resExp, "money max first, then id min first (default '-')");
-
-//
+  a.eql(res, resExp, "money max first, then id min (default ('+'))");
 
 };
 
@@ -194,12 +178,12 @@ exports["test#membership"] = function () {
 };
 
 exports["test#list operations"] = function () {
-  var eq = $.equality2('length');
+  var eq = $.equality('length');
 
   a.eql($.intersect([1,2,3,4], [2,4,6,8]), [2,4], "intersect basic");
   a.eql($.intersect([1,2,2,3,4], [6,4,4,2]), [2,2,4], "intersect duplicates");
 
-  var res = $.intersectBy($.equality2(1), [[1,3],[2,1],[1,4]], [[1,2], [2,4]]);
+  var res = $.intersectBy($.equality(1), [[1,3],[2,1],[1,4]], [[1,2], [2,4]]);
   a.eql(res, [[1,4]], "intersectBy crazy, result is in first list");
 
   //var res = $.partition($.equality(0)([2]), [[1], [2], [3], [2]]);
@@ -207,10 +191,10 @@ exports["test#list operations"] = function () {
   a.eql($.partition($.eq(2), [1,3,2,1,2]), [[2,2], [1,3,1]], "partition basic");
 
 
-  var res = $.deleteBy($.equality2(1), [[1,3],[2,1],[1,4]], [5,1]);
+  var res = $.deleteBy($.equality(1), [[1,3],[2,1],[1,4]], [5,1]);
   a.eql(res, [[1,3], [1,4]], "delete by equality(1)");
 
-  var res = $.deleteBy($.equality2(0), [[1,3],[2,1],[1,4]], [1,999]);
+  var res = $.deleteBy($.equality(0), [[1,3],[2,1],[1,4]], [1,999]);
   a.eql(res, [[2,1], [1,4]], "delete by equality(0) removes only first");
 
   a.eql($.delete($.range(5), 5), $.range(4), "delete from range");
@@ -226,14 +210,14 @@ exports["test#list operations"] = function () {
   a.eql($.nub([1,1,1,1]), [1], "nub ones basic");
   a.eql($.nubBy($.eq2, [1,1,1,1]), [1], "nubBy ones basic");
 
-  var res = $.nubBy($.equality2(1), [[1,3],[5,2],[2,3],[2,2]]);
+  var res = $.nubBy($.equality(1), [[1,3],[5,2],[2,3],[2,2]]);
   a.eql(res, [[1,3],[5,2]], "nubBy equality on 1");
 
   var notCoprime = $.compose($.gt(1), $.gcd);
   a.eql($.nubBy(notCoprime, $.range(2, 11)), [2,3,5,7,11], "primes nubBy");
 
   a.eql($.union([1,3,2,4], [2,3,7,5]), [1,3,2,4,7,5], "union");
-  var res = $.pluck(1, $.unionBy($.equality2(1)
+  var res = $.pluck(1, $.unionBy($.equality(1)
     , [[0,1],[0,3],[0,2],[0,4]]
     , [[0,2],[0,3],[0,7],[0,5]]
   ));
@@ -244,7 +228,7 @@ exports["test#list operations"] = function () {
   var ys = $.range(3)
   a.eql($.difference(ys.concat(xs), ys), xs, "difference prop");
 
-  var res = $.differenceBy($.equality2('a')
+  var res = $.differenceBy($.equality('a')
     , [{a:1}, {a:2}, {a:3}]
     , [{a:2, b:1}, {a:4, b:2}]
   );
@@ -253,7 +237,7 @@ exports["test#list operations"] = function () {
   a.eql($.group([1,3,3,2,4,4]), [[1],[3,3],[2],[4,4]], "basic group");
   a.eql($.group([1,1,1,1]), [[1,1,1,1]], "basic group ones");
 
-  var res = $.groupBy($.equality2(1), [[1,3],[2,1],[4,1],[2,3]]);
+  var res = $.groupBy($.equality(1), [[1,3],[2,1],[4,1],[2,3]]);
   a.eql(res, [ [[1,3]], [[2,1],[4,1]], [[2,3]] ], "groupBy equality on 1");
 };
 

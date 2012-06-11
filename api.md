@@ -3,6 +3,83 @@ For document brevity, $ is assumed to be the require placement of
 interlude, fn/f/g/h are assumed to be function names, anything ending in s
 is an array, and when applicable, x is related to xs by being an element of.
 
+
+# Operators
+## Binary Operators (2-Argument Versions)
+These are simple two argument lambdas which are useful occasionally.
+The function name ending with the number 2 is a naming convention consistently
+used throughout the library. It means the function takes 2 arguments and
+returns immediately.
+
+### $.plus2(x, y) :: x + y
+### $.minus2(x, y) :: x - y
+### $.times2(x, y) :: x * y
+### $.divide2(x, y) :: x / y
+### $.div2(x, y) :: floor(x/y)
+### $.mod2(x, y) :: x % y
+### $.append2(xs, ys) :: xs.concat(ys)
+### $.prepend2(xs, ys) :: ys.concat(xs)
+### $.and2(x, y) :: x && y
+### $.or2(x, y) :: x || y
+### $.eq2(x, y) :: x === y
+### $.neq2(x, y) :: x !== y
+### $.gt2(x, y) :: x > y
+### $.lt2(x, y) :: x < y
+### $.gte2(x, y) :: x >= y
+### $.lte2(x, y) :: x <= y
+
+````javascript
+$.plus2(2, 3); // 5
+$.or2(false, true); // true
+````
+
+## Curried Binary operators
+This section is useful for maps, as one of their arguments are curried,
+cutting down the amount of very basic closured lambdas you make.
+
+### $.plus(y) :: (x -> x + y)
+### $.minus(y) :: (x -> x - y)
+### $.times(y) :: (x -> x * y)
+### $.divide(y) :: (x -> x / y)
+### $.div(y) :: (x -> floor(x/y))
+### $.mod(y) :: (x -> x % y)
+### $.append(ys) :: (xs -> xs.concat(ys))
+### $.prepend(ys) :: (xs -> ys.concat(xs))
+
+````javascript
+[1,2,3,4,5].map($.plus(1)); // [2, 3, 4, 5, 6]
+[1,2,3,4,5].map($.minus(1)); // [0, 1, 2, 3, 4]
+[1,2,3,4,5].map($.times(2)); // [2, 4, 6, 8, 10]
+[2,4,6,8].map($.divide(2)); // [1, 2, 3, 4]
+[1,2,3,4].map($.div(2)); // [0, 1, 1, 2]
+[[1,2], [2,3]].map($.append([-1, 0])); // [ [1,2,-1,0], [2,3,-1,0] ]
+[[1,2], [2,3]].map($.prepend([-1, 0])); // [ [-1,0,1,2], [-1,0,2,3] ]
+````
+
+Due to the dynamic nature of JavaScript operators, a lot of these also work on
+strings.
+
+````javascript
+["hello", "hi"].map($.plus("world")); // ["helloworld", "hiworld"]
+["hello", "hi"].map($.append("world")); // ["helloworld", "hiworld"]
+["hello", "hi"].map($.prepend("world")); // ["worldhello", "worldhi"]
+````
+
+### $.gt(y) :: (x -> x > y)
+### $.lt(y) :: (x -> x < y)
+### $.eq(y) :: (x -> x === y)
+### $.neq(y) :: (x -> x !== y)
+### $.gte(y) :: (x -> x >= y)
+### $.lte(y) :: (x -> x <= y)
+
+Curried comparison is useful for filters and combinations with $.any / $.all.
+
+````javascript
+[1,4,2,5,2,3].filter($.gt(3)); // [4,5]
+[[1,3,5], [2,3,1]].filter($.any($.gte(5))); // [ [ 1, 3, 5 ] ]
+````
+
+# Interlude
 ## Functional Helpers
 ### $.id(x) :: x
 The identity function f(x) = x.
@@ -65,6 +142,17 @@ $.any($.gt(2))([1,2,3]); // true
 ### $.none(fn) -> (xs -> Boolean)
 An accessor for the negated Array.prototype.some, but curried for the array.
 
+### $.elem(xs) :: (x -> Boolean)
+### $.notElem(xs) :: (x -> Boolean)
+
+The membership tests are accessors for Array.prototype.indexOf,
+but with the array curried.
+
+```javascript
+[1,2,3,4,3].filter($.elem([1,3])); // [ 1, 3, 3 ]
+[1,2,3,4,3].filter($.notElem([1,3])); // [ 2, 4 ]
+````
+
 ## Math
 All Math functions operate purely on Number instances, and gcd & lcm
 in particular are only well-defined for integers.
@@ -113,134 +201,88 @@ $.odd(5); // true
 [1,2,3,4,5,6].filter($.even); // [ 2, 4, 6 ]
 ````
 
-### $.elem(xs) :: (x -> Boolean)
-### $.notElem(xs) :: (x -> Boolean)
-
-The membership tests are accessors for Array.prototype.indexOf,
-but with the array curried.
-
-```javascript
-[1,2,3,4,3].filter($.elem([1,3])); // [ 1, 3, 3 ]
-[1,2,3,4,3].filter($.notElem([1,3])); // [ 2, 4 ]
-````
-
-## Binary Operators (2-Argument Versions)
-These are simple two argument lambdas which are useful occasionally.
-The function name ending with the number 2 is a naming convention consistently
-used throughout the library. It means the function takes 2 arguments and
-returns immediately.
-
-### $.add2(x, y) :: x + y
-### $.subtract2(x, y) :: x - y
-### $.multiply2(x, y) :: x * y
-### $.concat2(xs, ys) :: xs.concat(ys)
-### $.and2(x, y) :: x && y
-### $.or2(x, y) :: x || y
-### $.eq2(x, y) :: x === y
-### $.neq2(x, y) :: x !== y
-### $.gt2(x, y) :: x > y
-### $.lt2(x, y) :: x < y
-### $.gte2(x, y) :: x >= y
-### $.lte2(x, y) :: x <= y
-
-````javascript
-$.add2(2, 3); // 5
-$.or2(false, true); // true
-````
-
-## Curried Binary operators
-This section is useful for maps, as one of their arguments are curried,
-cutting down the amount of very basic closured lambdas you make.
-
-### $.plus(x) :: (y -> x + y)
-### $.subtract(x) :: (y -> y - x)
-### $.times(x) :: (y -> y * x)
-### $.divide(x) :: (y -> y / x)
-### $.append(xs) :: (ys -> ys.concat(xs))
-### $.prepend(xs) :: (ys -> xs.concat(ys))
-
-````javascript
-[1,2,3,4,5].map($.plus(1)); // [2, 3, 4, 5, 6]
-[1,2,3,4,5].map($.subtract(1)); // [0, 1, 2, 3, 4]
-[1,2,3,4,5].map($.times(2)); // [2, 4, 6, 8, 10]
-[2,4,6,8].map($.divide(2)); // [1, 2, 3, 4]
-[[1,2], [2,3]].map($.append([-1, 0])); // [ [1,2,-1,0], [2,3,-1,0] ]
-[[1,2], [2,3]].map($.prepend([-1, 0])); // [ [-1,0,1,2], [-1,0,2,3] ]
-````
-
-Due to the dynamic nature of JavaScript operators, a lot of these also work on
-strings.
-
-````javascript
-["hello", "hi"].map($.plus("world")); // ["helloworld", "hiworld"]
-["hello", "hi"].map($.append("world")); // ["helloworld", "hiworld"]
-["hello", "hi"].map($.prepend("world")); // ["worldhello", "worldhi"]
-````
-
-### $.gt(y) :: (x -> x > y)
-### $.lt(y) :: (x -> x < y)
-### $.eq(y) :: (x -> x === y)
-### $.neq(y) :: (x -> x !== y)
-### $.gte(y) :: (x -> x >= y)
-### $.lte(y) :: (x -> x <= y)
-
-Curried comparison is useful for filters and combinations with $.any / $.all.
-
-````javascript
-[1,4,2,5,2,3].filter($.gt(3)); // [4,5]
-[[1,3,5], [2,3,1]].filter($.any($.gte(5))); // [ [ 1, 3, 5 ] ]
-````
-
-## Generalized Equality and Comparison
-### $.equality2(props..) :: (x, y -> x 'equality on props' y)
+## Generalized Equality
+### $.equality(props..) :: (x, y -> x 'equality on props' y)
 This is a special function that creates an equality testing function based on
 properties to test on. It will return true if and only if all the properties listed
 are the same for both x and y.
 
 ````javascript
-var lenEquals = $.equality2('length');
+var lenEquals = $.equality('length');
 lenEquals([1,3,5], [2,4,6]); // true
 lenEquals([1,3,5], [2,4]); // false
 
 var steve = {name: 'Steve', money: 30000, status: "Awesome"};
 var peter = {name: 'Peter', money: 30000, status: "Depressed"};
-var equallyCool = $.equality2('money', 'status');
+var equallyCool = $.equality('money', 'status');
 equallyCool(steve, peter); // false
 ````
 
 This can be very powerful combined with the generalized list functions further on!
 
-### $.equality(props..)(y) :: (x -> x 'equality on props' y)
-This is $.equality2 curried with the first element to test against.
-If equality has a more specific meaning for a set of records for instance,
-then it is useful to have a curriable version around in case you
-want to filter it.
+## Generalized Comparison
+These functions help generate
+[compare functions](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/sort)
+for `Array.prototype.sort`.
+
+### $.compare([ord]) :: (x, y -> x `compare` y)
+This creates a function which returns the numeric difference between x and y,
+optionally multiplying by minus one if the ord parameter is set to '-' for
+descending order. The default ord parameter '+' for ascending order may be omitted.
+
+When passed to `Array.prototype.sort`, it will sort the array _numerically_
+as opposed to the default ECMA behaviour of turning the elements into strings then
+sorting them _lexicographically_. This helps avoid common sorting mistakes:
 
 ````javascript
-var lenEquals = $.equality('length');
-[[1,3,5], [2,3], [2,4,6]].filter(lenEquals(3)); // [ [1,3,5], [2,4,6] ]
+[1,4,3,2].sort(); // [1,2,3,4] (expected)
+[2, 100, 10, 4].sort(); // [10, 100, 2, 4] (wtf!)
+
+[1,4,3,2].sort($.compare('+')); // [1,2,3,4] (expected)
+[2, 100, 10, 4].sort($.compare('+')); // [2, 4, 10, 100] (expected..)
 ````
 
 ### $.comparing(prop [, ord [, ..]]) :: (x, y -> x 'compare props' y)
-This is a special function that creates a comparison function which can be used
-directly by Array.prototype.sort. Pass in the name(s) of a (numeric!) property the
-elements to be sorted all have, and a sort compatible function will be returned.
+This creates a numeric compare function returning the numeric difference between
+any (or: the) included property which is not zero.
+If all properties are identical, it returns zero.
 
-A second parameter can be specified to set the
-direction of comparison; '+' for ascending, '-' for descending (default).
-
-It is possible to also sort by multible properties, i.e. sort by the first property
-if they are different, otherwise, the next and so on. If multiple properties
-are used, then the direction for each must be specified in alternating order.
+Pass in the name(s) of a (numeric!) property the
+elements to be sorted all have, along with the direction of comparison for each
+property: '+' for ascending (default), '-' for descending.
+The default last ord parameter can be omitted, but it is recommended included,
+as the arguments go pairwise: prop1, ord1, prop2, ord2, ...
 
 ````javascript
 [[1,3], [2,2],[3,4]].sort($.comparing(1)); // [ [2,2], [1,3], [3,4] ]
 
 var money = [{id: 1, money: 3}, {id: 2, money: 0}, {id: 3, money: 3}];
-money.sort($.comparing('money', '+', 'id', '+'));
-// [ { id: 3, money: 3 }, { id: 1, money: 3 }, { id: 2, money: 0 } ]
+// sort by money asc. first, then id desc.
+money.sort($.comparing('money', '+', 'id', '-'));
+// [ { id: 2, money: 0 }, { id: 3, money: 3 }, { id: 1, money: 3 } ]
 ````
 
+### Custom Basic Comparators
+While `comparing` and `compare` create comparison functions, may still be useful
+to create curried comparison functions that compare properties. Fortunately, this
+is quite easy to do with the tools available.
+
+````javascript
+var notNull = $.compose($.gt(0), $.get('length'));
+notNull([1,3]); // true
+
+var withinUnitSquare = $.all($.compose($.lte(1), Math.abs));
+[ [1,-1], [1,-2] ].filter(withinUnitSquare); // [ [1,-1] ]
+
+var withinUnitCircle = $.compose($.lte(1), $.pow(1/2), $.sum, $.map($.pow(2)));
+[ [0,0], [-1,0], [1,1], [0,0,1] ].filter(withinUnitCircle);
+// [ [0,0], [-1,0], [0,0,1] ]
+````
+
+#### Performance Note
+Going too much overboard with functional composition for relatively simple
+functions like the last example come with a performance tax.
+[Inlining is generally faster](http://jsperf.com/crazyfunctional2).
 
 ##  Higher Order Looping
 These tools allow loop like code to be written in a more declarative style.
@@ -258,26 +300,25 @@ $.range(1, 6, 2); // [ 1, 3, 5 ]
 $.range(0, 6, 2); // [ 0, 2, 4, 6 ]
 ````
 
-### $.fold (fn [, start]) :: (xs -> results)
+### $.fold(fn [, start]) :: (xs -> results)
 An accessor for `Array.prototype.reduce`, but with the function curried.
 `fn` *should* be a two parameter (y, x -> y) function. I.e. variadic functions
-will fail spectacularly, but functions catered for `Array.prototype.reduce`
+will fail spectacularly, but functions made for `Array.prototype.reduce`
 will work.
 
 ````javascript
-$.sun = $.fold($.add2, 0);
-$.product = $.fold($.multiply2, 1);
-$.flatten = $.fold($.concat2, []);
+var product = $.fold($.times2, 1);
+var flatten = $.fold($.append2, []);
 ````
 
-### $.scan (fn [, start]) :: (xs -> results)
+### $.scan(fn, start) :: (xs -> results)
 Operationally equivalent to `$.fold` but collects all the intermediate results.
 Does not use `Array.prototype.reduce` under the covers, so 3rd and 4th argumets
 will always be undefined.
 
 ````javascript
-$.fold($.add2, 0)([1,1,1,1]); // 4
-$.scan($.add2, 0)([1,1,1,1]); // [ 0, 1, 2, 3, 4 ]
+$.fold($.plus2, 0)([1,1,1,1]); // 4
+$.scan($.plus2, 0)([1,1,1,1]); // [ 0, 1, 2, 3, 4 ]
 ````
 
 ### $.iterate(num, fn) :: (initial -> results)
@@ -289,81 +330,12 @@ to `fn` and collecting the results.
 $.iterate(3, $.prepend("ha"))("ha!"); // [ 'ha!', 'haha!', 'hahaha!' ]
 ````
 
-## Lifts and Unlifts
-Lifting is the process of converting a variadic function into a function
-acting on an Array. Unlifting is the reverse process; turn an array function
-into a variadic one. These operations are used by Interlude to create synonymous
-versions that normally we'd have to manually fn.apply ourselves.
+### $.map(fn) :: (xs -> results)
+An accessor for `Array.prototype.map`, but with the function curried.
 
-### $.lift(fn [, context]) -> (xs -> Function)
-An accessor for Function.prototype.apply, but curried for the array of arguments.
+### $.filter(fn) :: (xs -> results)
+An accessor for `Array.prototype.filter`, but with the function curried.
 
-```javascript
-$.maximum = $.lift(Math.max, Math);
-$.maximum([3,6,4,2]); // 6
-````
-
-### $.unlift(fn [, context]) -> (args.. -> Function)
-Take a lifted function (one that take a single array argument) and turn it into a
-variadic one; the inverse operation of lift. Variadic/unlifted functions work with
-$.zipWith for any number of lists.
-
-````javascript
-$.multiply = $.unlift($.product);
-$.multiply(1,2,3,4,5); // 120
-````
-
-## Array Functions
-These take an array `xs` and does the semantically named operation.
-
-### $.maximum(xs) :: Number
-### $.minimum(xs) :: Number
-### $.maximumBy(fn, xs) :: xs[maxidx]
-### $.minimumBy(fn, xs) :: xs[minidx]
-
-If you need to do some computation on each element before taking the max,
-then `$.maximumBy` is appropriate, it will also return the element for which
-`fn` return the max rather than the maximum return. To simply get the
-maximum return value consider collecting up the values first.
-
-````javascript
-$.maximum([1,3,2,5]); // 5
-$.maximumBy($.get('length'), [ [1,3,2], [2], [2,3] ]); // [ 1, 3, 2 ]
-$.maximum($.collect('length', [ [1,3,2], [2], [2,3] ])); // 3
-````
-
-### $.sum(xs) :: Number
-### $.product(xs) :: Number
-### $.flatten(xs) :: Array
-Reduces the level of nesting in an array by one.
-
-````javascript
-$.flatten([ [1,3,2], [2,[3],2] , [1] ]); // [ 1, 3, 2, 2, [ 3 ], 2, 1 ]
-````
-
-### $.and(xs) :: Boolean
-Like `$.any`, but takes an array of boolean-like elements
-to be chained together with `&&`.
-
-
-### $.or(xs) :: Boolean
-Like `$.or`, but takes an array of boolean-like elements
-to be chained together with `||`.
-
-
-## Variadic Functions
-These act on several arguments, and can be used with `$.zipWith` for any number
-of lists.
-
-### $.add(x [, y [, ..]])
-### $.multiply(x [, y [, ..]])
-### $.concat(xs [, ys [, ..]])
-
-````javascript
-$.add(1,2,3); // 6
-$.multiply(1,2,3,4,5); // 120
-$.concat([1,2], [3,4], [5,6]); // [ 1, 2, 3, 4, 5, 6 ]
-````
 
 ## Functional Composition
 
@@ -383,26 +355,6 @@ Same as `$.compose`, but the functions are called in sequential order.
 ````javascript
 var isPair = $.sequence($.get('length'), $.eq(2)); // (xs -> Boolean)
 ````
-
-### $.composition(fns) :: (x -> $.compose(fn1, ..)(x))
-A lifted version of `$.compose`. Takes an array of functions and composes
-them in algebraic order.
-
-### $.pipeline(fns) :: (x -> $.sequence(fn1, ..)(x))
-A lifted version of `$.sequence`. Takes an array of functions and composes
-them in sequential order.
-
-````javascript
-var stringProcessing = [
-  trimString
-, decodeBbCode
-, replaceEntities
-];
-
-// assuming the 3 functions above exist and are (str -> str)
-var sanitizeStr = $.pipeline(stringProcessing); // (str -> str)
-````
-
 
 ## Functional Accessors
 ### $.get(prop) :: (el -> el[prop])
@@ -446,6 +398,48 @@ scan deeply wheras this is does a quick iteration without extra function calls.
 $.collect('length', [ [1,3,2],  [2], [1,2] ]); // [3,1,2]
 ````
 
+## Array Functions
+These take an array `xs` and does the semantically named operation.
+
+### $.maximum(xs) :: Number
+### $.minimum(xs) :: Number
+### $.maximumBy(fn, xs) :: xs[maxidx]
+### $.minimumBy(fn, xs) :: xs[minidx]
+
+If you need to do some computation on each element before taking the max,
+then `$.maximumBy` is appropriate, it will also return the element for which
+`fn` return the max rather than the maximum return. To simply get the
+maximum return value consider collecting up the values first.
+
+````javascript
+$.maximum([1,3,2,5]); // 5
+$.maximumBy($.get('length'), [ [1,3,2], [2], [2,3] ]); // [ 1, 3, 2 ]
+$.maximum($.collect('length', [ [1,3,2], [2], [2,3] ])); // 3
+````
+
+### $.sum(xs) :: Number
+### $.product(xs) :: Number
+### $.flatten(xs) :: Array
+Reduces the level of nesting in an array by one.
+
+````javascript
+$.flatten([ [1,3,2], [2,[3],2] , [1] ]); // [ 1, 3, 2, 2, [ 3 ], 2, 1 ]
+````
+
+## Variadic Functions
+These act on several arguments, and can be used with `$.zipWith` for any number
+of lists.
+
+### $.add(x [, y [, ..]])
+### $.multiply(x [, y [, ..]])
+### $.concat(xs [, ys [, ..]])
+
+````javascript
+$.add(1,2,3); // 6
+$.multiply(1,2,3,4,5); // 120
+$.concat([1,2], [3,4], [5,6]); // [ 1, 2, 3, 4, 5, 6 ]
+````
+
 ## List Operations
 Dynamic Data.List. Many of these functions (somewhat remarkably) work on strings
 as arrays.
@@ -466,7 +460,7 @@ and collects these results rather.
 
 zipWith generalises zip by zipping with the function given as the first argument,
 instead of a collecting the elements.
-For example, $.zipWith($.add2, xs, ys) is applied to two arrays to produce
+For example, $.zipWith($.plus2, xs, ys) is applied to two arrays to produce
 the array of corresponding sums.
 
 ````javascript
@@ -518,7 +512,7 @@ supply their own equality test.
 The non-overloaded version of `intersect`.
 
 ````javascript
-$.intersectBy($.equality2('a'), [{a:1}, {a:4, b:0}], [{a:2}, {a:4, b:1}]);
+$.intersectBy($.equality('a'), [{a:1}, {a:4, b:0}], [{a:2}, {a:4, b:1}]);
 // [ { a: 4, b: 0 } ]
 ````
 
@@ -548,7 +542,7 @@ their own equality test.
 The non-overloaded version of `group`.
 
 ````javascript
-$.groupBy($.equality2('a'), [{a:1}, {a:4, b:1}, {a:4, b:0}, {a:2}]);
+$.groupBy($.equality('a'), [{a:1}, {a:4, b:1}, {a:4, b:0}, {a:2}]);
 // [ [ { a: 1 } ],
 //   [ { a: 4, b: 1 }, { a: 4, b: 0 } ],
 //   [ { a: 2 } ] ]
@@ -570,7 +564,7 @@ their own equality test.
 The non-overloaded version of `union`.
 
 ````javascript
-$.unionBy($.equality2('a'), [{a:1},{a:3}], [{a:2},{a:3}]);
+$.unionBy($.equality('a'), [{a:1},{a:3}], [{a:2},{a:3}]);
 // [ { a: 1 }, { a: 3 }, { a: 2 } ]
 ````
 
@@ -590,7 +584,7 @@ $.difference([1,2,2,3], [2,3,4]); // [ 1, 2 ]
 The non-overloaded version of `difference`.
 
 ````javascript
-$.differenceBy($.equality2('a'), [{a:1}, {a:2}], [{a:2}, {a:3}]);
+$.differenceBy($.equality('a'), [{a:1}, {a:2}], [{a:2}, {a:3}]);
 // [ { a: 1 } ]
 ````
 
@@ -634,7 +628,7 @@ this special case implementation uses `Array.prototype.indexOf` and is faster.
 The generalized version of `delete`.
 
 ````javascript
-$.deleteBy($.equality2('a'), [{a:1},{a:2},{a:3},{a:2}], {a:2})
+$.deleteBy($.equality('a'), [{a:1},{a:2},{a:3},{a:2}], {a:2})
 // [ { a: 1 }, { a: 3 }, { a: 2 } ]
 ````
 
@@ -661,8 +655,9 @@ To delete all, `Array.prototype.filter` is best suited:
 $.delete([1,2,2,3,4], 2); // [1,2,3,4]
 ````
 
-#
 
+
+---
 
 TODO: $.copy for shallow copy?
 TODO: $.extend?
