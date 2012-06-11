@@ -98,8 +98,7 @@ exports["test#lifted functions"] = function () {
 
 
 exports["test#composition"] = function () {
-  a.equal($.compose($.times(2), $.plus(5), $.plus2)(3,4), 24, "compose 3 fns");
-  a.equal($.sequence($.plus2, $.plus(5), $.times(2))(3,4), 24, "compose 3 fns");
+  a.equal($.seq3($.plus2, $.plus(5), $.times(2))(3,4), 24, "seq3 fns");
 };
 
 exports["test#get/set"] = function () {
@@ -213,7 +212,7 @@ exports["test#list operations"] = function () {
   var res = $.nubBy($.equality(1), [[1,3],[5,2],[2,3],[2,2]]);
   a.eql(res, [[1,3],[5,2]], "nubBy equality on 1");
 
-  var notCoprime = $.compose($.gt(1), $.gcd);
+  var notCoprime = $.seq2($.gcd, $.gt(1));
   a.eql($.nubBy(notCoprime, $.range(2, 11)), [2,3,5,7,11], "primes nubBy");
 
   a.eql($.union([1,3,2,4], [2,3,7,5]), [1,3,2,4,7,5], "union");

@@ -219,7 +219,7 @@ $.comparing = function () {
 
 // manually lift/unlift "compose" for efficiency rather than fold/unlift over chain
 // we maintain the lifted/unlifted name semantics of "take the" x || we x
-$.compose = function (/*fns...*/) {
+/*$.compose = function () {
   var fns = arguments;
   return function () {
     var args = arguments;
@@ -228,12 +228,12 @@ $.compose = function (/*fns...*/) {
     }
     return args[0];
   };
-};
+};*/
 
 // same as compose, but applies functions in arguments list order
 // sequence(f1, f2, f3..., fn)(args...) == fn(...(f3(f2(f1(args...)))))
 // $.sequence($.plus(2), $.plus(3), $.times(2))(2) -> 14
-$.sequence = function (/*fns...*/) {
+$.seq = function () {
   var fns = arguments;
   return function () {
     var args = arguments;
@@ -241,6 +241,26 @@ $.sequence = function (/*fns...*/) {
       args = [fns[i].apply(this, args)];
     }
     return args[0];
+  };
+};
+
+// more efficient functional sequencers:
+// http://jsperf.com/crazyfunctional8
+$.seq2 = function (f, g) {
+  return function (x, y, z, w, u) {
+    return g(f(x, y, z, w, u));
+  };
+};
+
+$.seq3 = function (f, g, h) {
+  return function (x, y, z, w, u) {
+    return h(g(f(x, y, z, w, u)));
+  };
+};
+
+$.seq4 = function (f, g, h, k) {
+  return function (x, y, z, w, u) {
+    return k(h(g(f(x, y, z, w, u))));
   };
 };
 

@@ -268,21 +268,17 @@ to create curried comparison functions that compare properties. Fortunately, thi
 is quite easy to do with the tools available.
 
 ````javascript
-var notNull = $.compose($.gt(0), $.get('length'));
+var notNull = $.seq2($.get('length'), $.gt(0));
 notNull([1,3]); // true
 
-var withinUnitSquare = $.all($.compose($.lte(1), Math.abs));
+var withinUnitSquare = $.all($.seq2(Math.abs, $.lte(1)));
 [ [1,-1], [1,-2] ].filter(withinUnitSquare); // [ [1,-1] ]
 
-var withinUnitCircle = $.compose($.lte(1), $.pow(1/2), $.sum, $.map($.pow(2)));
+var withinUnitCircle = $.seq4($.map($.pow(2)), $.sum, $.pow(1/2), $.lte(1));
 [ [0,0], [-1,0], [1,1], [0,0,1] ].filter(withinUnitCircle);
 // [ [0,0], [-1,0], [0,0,1] ]
 ````
 
-#### Performance Note
-Going too much overboard with functional composition for relatively simple
-functions like the last example come with a performance tax.
-[Inlining is generally faster](http://jsperf.com/crazyfunctional2).
 
 ##  Higher Order Looping
 These tools allow loop like code to be written in a more declarative style.
@@ -338,23 +334,30 @@ An accessor for `Array.prototype.filter`, but with the function curried.
 
 
 ## Functional Composition
+Functional composition is done in sequential, rather than algebraic, order
+in interlude. The reasoning for this is there is no real benefit of listing
+the functions in the reverse order in JavaScript. The difference is however
+highlighted by naming it `seq` for sequence, rather than the traditional
+compose.
 
-### $.compose(f [, g [, ..]]) :: (x -> f(g(..(x))))
-Returns a function which will apply the passed in functions in algebraic order;
-i.e. the last function first. The last function can have multiple arguments,
-but all others are simply passed the result of the previous functions.
+### $.seq(f [, g [, ..]]) :: (args.. -> ..(g(f(args..))))
+Returns a function which will apply the passed in functions in sequential order.
 
 ````javascript
-var isPair = $.compose($.eq(2), $.get('length')); // (xs -> Boolean)
+var isPair = $.seq($.get('length'), $.eq(2)); // (xs -> Boolean)
 [[1,3,2], [2], [], [2,1], [1,2]].filter(isPair); // [ [2,1], [1,2] ]
 ````
 
-### $.sequence(f [, g [, ..]]) :: (x -> ..(g(f(x))))
-Same as `$.compose`, but the functions are called in sequential order.
+### $.seq2(f, g) :: (x, y, z, w, u) -> g(f(x, y, z, w, u))
+### $.seq3(f, g, h) :: (x, y, z, w, u) -> h(g(f(x, y, z, w, u)))
+### $.seq4(f, g, h, k) :: (x, y, z, w, u) -> k(h(g(f(x, y, z, w, u))))
+These specific shortcut functions are there to speed up the most common use cases
+of functinal composition; a few functions with a few arguments. Most of the times
+these things aren't significant, and you should not optimize prematurely, but this
+is easy and efficient. Check out this
+[perf](http://jsperf.com/crazyfunctional8)
+for more information on how significant this is.
 
-````javascript
-var isPair = $.sequence($.get('length'), $.eq(2)); // (xs -> Boolean)
-````
 
 ## Functional Accessors
 ### $.get(prop) :: (el -> el[prop])
