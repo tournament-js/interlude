@@ -130,6 +130,7 @@ $.range = function (start, stop, step) {
   return range;
 };
 
+// this arguably needs a curried version, waiting for initial
 $.iterate = function (times, init, fn) {
   var result = [init];
   for (var i = 1; i < times; i += 1) {
@@ -138,23 +139,29 @@ $.iterate = function (times, init, fn) {
   return result;
 };
 
-// DO NOT FOLD WITH VARIADIC FUNCTIONS!
-// Instead use binary (uncurried) operators (also more efficient)
-$.fold = function (fn, initial) {
-  return function (xs) {
-    return xs.reduce(fn, initial);
-  };
+$.find = function (xs, fn) {
+  for (var i = 0; i < xs.length; i += 1) {
+    if (fn(xs[i])) {
+      return xs[i];
+    }
+  }
+  return -1;
 };
 
-// like fold, but keeps intermediary steps
+
 // scan(fn, z)([x1, x2, ...]) == [z, f(z, x1), f(f(z, x1), x2), ...]
-$.scan = function (fn, initial) {
+$.scan = function (xs, initial, fn) {
+  var result = [initial];
+  for (var i = 0; i < xs.length; i += 1) {
+    result.push(fn(result[i], xs[i]));
+  }
+  return result;
+};
+
+// these need only curried versions, as immediate use could simply access prototype on xs
+$.reduce = function (fn, initial) {
   return function (xs) {
-    var result = [initial];
-    for (var i = 0; i < xs.length; i += 1) {
-      result.push(fn(result[i], xs[i]));
-    }
-    return result;
+    return xs.reduce(fn, initial);
   };
 };
 
@@ -170,6 +177,15 @@ $.filter = function (fn) {
   };
 };
 
+// general accessor for anything else
+// more cumbersome but can do most things well
+$.invoke = function (method) {
+  var args = slice.call(arguments, 1);
+  return function (xs) {
+    var fn = xs[method];
+    return fn.apply(xs, args);
+  };
+};
 
 // ---------------------------------------------
 // Comparison
@@ -209,25 +225,24 @@ $.comparing = function () {
 };
 
 // ---------------------------------------------
-// compositions and sequencing
+// Functional Sequencing (Composition)
 // ---------------------------------------------
 
-
 // $.seq(f1, f2, f3..., fn)(args...) == fn(...(f3(f2(f1(args...)))))
-// $.seq($.plus(2), $.plus(3), $.times(2))(2) -> 14
+// performance: http://jsperf.com/seqperformance
 $.seq = function () {
   var fns = arguments;
   return function () {
-    var args = arguments;
-    for (var i = 0; i < fns.length; i += 1) {
-      args = [fns[i].apply(this, args)];
+    // only need to apply the first with initial args
+    var res = fns[0].apply(this, arguments);
+    for (var i = 1; i < fns.length; i += 1) {
+      res = fns[i](res); // rest chain in result from previous
     }
-    return args[0];
+    return res;
   };
 };
 
-// more efficient functional sequencers:
-// http://jsperf.com/crazyfunctional8
+// more efficient functional sequencers
 $.seq2 = function (f, g) {
   return function (x, y, z, w) {
     return g(f(x, y, z, w));

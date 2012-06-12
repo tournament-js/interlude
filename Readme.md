@@ -23,17 +23,17 @@ Then spice up your JavaScript with Functional Programming;
 $.range(5).map($.pow(2));
 // [ 1, 4, 9, 16, 25 ]
 
-var nested = [[1, 3, 2], [2, 2], [1, 4, 2, 3]];
+var nested = [ [1,3,2], [2,2], [1,4,2,3] ];
 $.collect('length', nested);
 // [ 3, 2, 4 ]
 
 nested.filter($.all($.eq(2)));
-// [ [ 2, 2 ] ]
+// [ [2, 2] ]
 
 nested.sort($.comparing('length'));
 // [ [ 2 ], [ 1, 3, 2 ], [ 1, 4, 2, 3 ] ]
 
-$.zipWith($.plus3, [1, 1, 1, 1, 1], $.range(5), [1, 0, 0]);
+$.zipWith($.plus3, [1,1,1,1,1], $.range(5), [1,0,0]);
 // [ 3, 3, 4 ]
 
 // Powers of two
@@ -51,15 +51,6 @@ $.iterate(5, [1], pascalNext);
 //   [ 1, 2, 1 ],
 //   [ 1, 3, 3, 1 ],
 //   [ 1, 4, 6, 4, 1 ] ]
-
-
-// Fibonacci numbers
-var fibPairs = $.iterate(8, function (x) {
-  return [x[1], x[0] + x[1]];
-})([0,1]);
-$.collect(0, fibPairs);
-// [ 0, 1, 1, 2, 3, 5, 8, 13 ]
-
 
 // Prime numbers
 var notCoprime = $.seq2($.gcd, $.gt(1));

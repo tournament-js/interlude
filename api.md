@@ -124,7 +124,7 @@ Sometimes useful for composing certain functions.
 ````
 
 ### $.all(fn) -> (xs -> Boolean)
-An accessor for Array.prototype.every, but curried for the array.
+An accessor for Array.prototype.every, but with the function curried.
 
 ````javascript
 $.all($.gt(2))([3,4,5]); // true
@@ -132,7 +132,7 @@ $.all($.gt(2))([3,4,5]); // true
 ````
 
 ### $.any(fn) -> (xs -> Boolean)
-An accessor for Array.prototype.some, but curried for the array.
+An accessor for Array.prototype.some, but with the function curried.
 
 ````javascript
 $.any($.gt(2))([1,2,3]); // true
@@ -140,7 +140,7 @@ $.any($.gt(2))([1,2,3]); // true
 ````
 
 ### $.none(fn) -> (xs -> Boolean)
-An accessor for the negated Array.prototype.some, but curried for the array.
+An accessor for the negated Array.prototype.some, but with the function curried.
 
 ### $.elem(xs) :: (x -> Boolean)
 ### $.notElem(xs) :: (x -> Boolean)
@@ -291,26 +291,30 @@ money.sort($.comparing('money', '+', 'id', '-'));
 ````
 
 ### Custom Comparators
-While `comparing` and `compare` are great at creating comparison functions,
-it might still be useful to create curried comparison functions that compare
-on properties. Fortunately, this is quite easy to do with the tools available.
+While `comparing`, `compare`, and `equality` are great at creating comparison
+functions and equality testers, it might still be useful to create curried
+functions that compare/filter based on such properties.
+Fortunately, this is quite easy to do with the tools available.
 
 ````javascript
-var notNull = $.seq2($.get('length'), $.gt(0));
-notNull([1,3]); // true
+// Check length >0
+var notEmpty = $.seq2($.get('length'), $.gt(0));
+[ [1], [], [2,4] ].filter(notEmpty); // [ [1], [2,4] ]
 
+// Check absolute value <=1 on all elements
 var withinUnitSquare = $.all($.seq2(Math.abs, $.lte(1)));
 [ [1,-1], [1,-2], [1,1,1] ].filter(withinUnitSquare); // [ [1,-1], [1,1,1] ]
 
-var withinUnitCircle = $.seq4($.map($.pow(2)), $.sum, $.pow(1/2), $.lte(1));
-[ [0,0], [-1,0], [1], [1.1], [0,0,1], [0.2, 0.2, 0.2, 0.2] ].filter(withinUnitCircle);
-// [ [0,0], [-1,0], [1], [0,0,1], [0.2, 0.2, 0.2, 0.2] ]
+// Check euclidean distance of point <=1
+var withinUnitCircle = $.seq4($.map($.pow(2)), $.sum, Math.sqrt, $.lte(1));
+[ [1,-1], [0,0], [1], [1.1], [0,0.5,0.5], [0,0,0,1] ].filter(withinUnitCircle);
+// [ [0,0], [1], [0,0.5,0.5], [0,0,0,1] ]
 ````
 
-While these examples are contrieved and the simplicity and efficiency of these
-functions could be significantly improved by knowing the dimension of the space
-being worked on (typical case), it shows that very flexible functions can be
-expressed very simply.
+While these examples are contrieved and the efficiency of these
+functions could be improved by knowing the dimension of the space
+being worked on (typical case) to help inlining a smaller specific function,
+it shows that very flexible higher order functions can be expressed very simply.
 
 ##  Higher Order Looping
 These tools allow loop like code to be written in a more declarative style.
@@ -328,34 +332,46 @@ $.range(1, 6, 2); // [ 1, 3, 5 ]
 $.range(0, 6, 2); // [ 0, 2, 4, 6 ]
 ````
 
-### $.fold(fn [, start]) :: (xs -> results)
-An accessor for `Array.prototype.reduce`, but with the function curried.
-`fn` *should* be a two parameter (y, x -> y) function. I.e. variadic functions
-will fail spectacularly, but functions made for `Array.prototype.reduce`
-will work.
+### $.iterate(len, x, fn) :: results
+Returns a size `len` array of repeated applications of `fn` to `x`:
+
+`$.iterate(len, x, f) equals [x, f(x), f(f(x)), ...]`
 
 ````javascript
-var product = $.fold($.times2, 1);
-var flatten = $.fold($.append2, []);
+$.iterate(3, "ha!", $.prepend("ha")); // [ 'ha!', 'haha!', 'hahaha!' ]
+
+// Fibonacci numbers
+var fibPairs = $.iterate(8, [0,1], function (x) {
+  return [x[1], x[0] + x[1]];
+});
+$.collect(0, fibPairs);
+// [ 0, 1, 1, 2, 3, 5, 8, 13 ]
 ````
 
-### $.scan(fn, start) :: (xs -> results)
-Operationally equivalent to `$.fold` but collects all the intermediate results.
-Does not use `Array.prototype.reduce` under the covers, so 3rd and 4th argumets
-will always be undefined.
+### $.scan(xs, start, fn) :: results
+Operationally equivalent to `xs.reduce(fn, start)`,
+but additionally collects all the intermediate results. Thus:
+
+`scan(fn, z, [x1, x2, ...]) == [z, f(z, x1), f(f(z, x1), x2), ...]`
+
+This does not use `Array.prototype.reduce` under the covers,
+so 3rd and 4th arguments will always be undefined inside `fn`.
 
 ````javascript
 $.fold($.plus2, 0)([1,1,1,1]); // 4
 $.scan($.plus2, 0)([1,1,1,1]); // [ 0, 1, 2, 3, 4 ]
 ````
 
-### $.iterate(num, init, fn) :: results
-Returns a function which iterates `num` times over a `fn` (x -> x)
-by passing the result of the previous iteration into the next call
-to `fn` and collecting the results.
+### $.find(fn, xs) :: x
+Finds the first element `x` in `xs` for which `fn(x)` is true.
+
+
+### $.reduce(fn [, start]) :: (xs -> results)
+An accessor for `Array.prototype.reduce`, but with the function curried.
 
 ````javascript
-$.iterate(3, "ha!", $.prepend("ha")); // [ 'ha!', 'haha!', 'hahaha!' ]
+var product = $.fold($.times2, 1);
+var flatten = $.fold($.append2, []);
 ````
 
 ### $.map(fn) :: (xs -> results)
@@ -363,6 +379,16 @@ An accessor for `Array.prototype.map`, but with the function curried.
 
 ### $.filter(fn) :: (xs -> results)
 An accessor for `Array.prototype.filter`, but with the function curried.
+
+### $.invoke(method [, args..]) :: (x -> result)
+An accessor for any method on the prototype of the type of `x`.
+
+````javascript
+var xs = [1, 2, 3, 4];
+$.invoke('join', ''));
+
+$.invoke('splice', 1, 0, 3)(xs);
+````
 
 ## Functional Accessors
 ### $.get(prop) :: (el -> el[prop])
