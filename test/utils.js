@@ -61,7 +61,7 @@ exports['test#curried binary ops'] = function () {
 exports["test#higher order looping"] = function () {
   a.equal($.fold($.plus2, 5)([1,1,1]), 8, "fold add 5 + 1+1+1 === 8");
   a.eql($.scan($.plus2, 5)([1,1,1]), [5,6,7,8],"scan add 5 [1,1,1] === [5,6,7,8]");
-  a.eql($.iterate(5, $.times(2))(2), [2,4,8,16,32], "iterate (*2)");
+  a.eql($.iterate(5, 2, $.times(2)), [2,4,8,16,32], "iterate (*2)");
   a.eql($.range(1,5), $.range(5), "range 1 indexed");
   a.eql($.range(5), [1,2,3,4,5], "range inclusive");
   a.eql($.range(1,5,2), [1,3,5], "range step inclusive");

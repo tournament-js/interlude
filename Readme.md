@@ -23,25 +23,21 @@ Then spice up your JavaScript with Functional Programming;
 $.range(5).map($.pow(2));
 // [ 1, 4, 9, 16, 25 ]
 
-var nested = [[1, 3, 2], [2], [1, 4, 2, 3]];
+var nested = [[1, 3, 2], [2, 2], [1, 4, 2, 3]];
 $.collect('length', nested);
-// [ 3, 1, 4 ]
+// [ 3, 2, 4 ]
 
 nested.filter($.all($.eq(2)));
-// [ [2] ]
+// [ [ 2, 2 ] ]
 
 nested.sort($.comparing('length'));
 // [ [ 2 ], [ 1, 3, 2 ], [ 1, 4, 2, 3 ] ]
 
-$.zipWith($.add, [1, 1, 1, 1, 1], $.range(5), [1, 0, 0]);
+$.zipWith($.plus3, [1, 1, 1, 1, 1], $.range(5), [1, 0, 0]);
 // [ 3, 3, 4 ]
 
-var f = g = h = $.noop;
-$.compose(f, g, h);
-// [Function] :: args -> f(g(h(args)))
-
 // Powers of two
-$.iterate(8, $.times(2))(2);
+$.iterate(8, 2, $.times(2));
 // [ 2, 4, 8, 16, 32, 64, 128, 256 ]
 
 
@@ -49,7 +45,7 @@ $.iterate(8, $.times(2))(2);
 var pascalNext = function (row) {
   return $.zipWith($.plus2, row.concat(0), [0].concat(row));
 }
-$.iterate(5, pascalNext)([1]);
+$.iterate(5, [1], pascalNext);
 // [ [ 1 ]
 //   [ 1, 1 ],
 //   [ 1, 2, 1 ],
@@ -66,7 +62,7 @@ $.collect(0, fibPairs);
 
 
 // Prime numbers
-var notCoprime = $.compose($.gt(1), $.gcd);
+var notCoprime = $.seq2($.gcd, $.gt(1));
 $.nubBy(notCoprime, $.range(2, 20));
 // [ 2, 3, 5, 7, 11, 13, 17, 19 ]
 ````

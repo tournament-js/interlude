@@ -130,14 +130,12 @@ $.range = function (start, stop, step) {
   return range;
 };
 
-$.iterate = function (times, fn) {
-  return function (x) {
-    var result = [x];
-    for (var i = 1; i < times; i += 1) {
-      result.push(fn(result[i - 1]));
-    }
-    return result;
-  };
+$.iterate = function (times, init, fn) {
+  var result = [init];
+  for (var i = 1; i < times; i += 1) {
+    result.push(fn(result[i - 1]));
+  }
+  return result;
 };
 
 // DO NOT FOLD WITH VARIADIC FUNCTIONS!
@@ -247,20 +245,20 @@ $.seq = function () {
 // more efficient functional sequencers:
 // http://jsperf.com/crazyfunctional8
 $.seq2 = function (f, g) {
-  return function (x, y, z, w, u) {
-    return g(f(x, y, z, w, u));
+  return function (x, y, z, w) {
+    return g(f(x, y, z, w));
   };
 };
 
 $.seq3 = function (f, g, h) {
-  return function (x, y, z, w, u) {
-    return h(g(f(x, y, z, w, u)));
+  return function (x, y, z, w) {
+    return h(g(f(x, y, z, w)));
   };
 };
 
 $.seq4 = function (f, g, h, k) {
-  return function (x, y, z, w, u) {
-    return k(h(g(f(x, y, z, w, u))));
+  return function (x, y, z, w) {
+    return k(h(g(f(x, y, z, w))));
   };
 };
 

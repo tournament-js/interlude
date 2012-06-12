@@ -201,6 +201,34 @@ $.odd(5); // true
 [1,2,3,4,5,6].filter($.even); // [ 2, 4, 6 ]
 ````
 
+## Functional Composition
+Functional composition is done in sequential (rather than algebraic) order
+in interlude. The reasoning for this is there is no real benefit of listing
+the functions in the reverse order of execution in JavaScript. The difference is
+still highlighted by naming it `seq` for _sequence_, rather than the perhaps
+more traditional _compose_.
+
+### $.seq(f [, g [, ..]]) :: (args.. -> ..(g(f(args..))))
+Returns a function which will apply the passed in functions in sequential order.
+
+````javascript
+var isPair = $.seq($.get('length'), $.eq(2)); // (xs -> Boolean)
+[[1,3,2], [2], [], [2,1], [1,2]].filter(isPair); // [ [2,1], [1,2] ]
+````
+
+This is a general, doubly variadic version of the more common use case versions
+below.
+
+### $.seq2(f, g) :: (x, y, z, w) -> g(f(x, y, z, w))
+### $.seq3(f, g, h) :: (x, y, z, w) -> h(g(f(x, y, z, w)))
+### $.seq4(f, g, h, k) :: (x, y, z, w) -> k(h(g(f(x, y, z, w))))
+These specific shortcut functions are there to speed up the most common use cases
+of functional composition; a few functions with a few initial arguments.
+
+The speed of composing functions is in general not significant, but avoiding
+the variadic slice penalty can speed up such code
+[slightly](http://jsperf.com/crazyfunctional8).
+
 ## Generalized Equality
 ### $.equality(props..) :: (x, y -> x 'equality on props' y)
 This is a special function that creates an equality testing function based on
@@ -262,23 +290,27 @@ money.sort($.comparing('money', '+', 'id', '-'));
 // [ { id: 2, money: 0 }, { id: 3, money: 3 }, { id: 1, money: 3 } ]
 ````
 
-### Custom Basic Comparators
-While `comparing` and `compare` create comparison functions, may still be useful
-to create curried comparison functions that compare properties. Fortunately, this
-is quite easy to do with the tools available.
+### Custom Comparators
+While `comparing` and `compare` are great at creating comparison functions,
+it might still be useful to create curried comparison functions that compare
+on properties. Fortunately, this is quite easy to do with the tools available.
 
 ````javascript
 var notNull = $.seq2($.get('length'), $.gt(0));
 notNull([1,3]); // true
 
 var withinUnitSquare = $.all($.seq2(Math.abs, $.lte(1)));
-[ [1,-1], [1,-2] ].filter(withinUnitSquare); // [ [1,-1] ]
+[ [1,-1], [1,-2], [1,1,1] ].filter(withinUnitSquare); // [ [1,-1], [1,1,1] ]
 
 var withinUnitCircle = $.seq4($.map($.pow(2)), $.sum, $.pow(1/2), $.lte(1));
-[ [0,0], [-1,0], [1,1], [0,0,1] ].filter(withinUnitCircle);
-// [ [0,0], [-1,0], [0,0,1] ]
+[ [0,0], [-1,0], [1], [1.1], [0,0,1], [0.2, 0.2, 0.2, 0.2] ].filter(withinUnitCircle);
+// [ [0,0], [-1,0], [1], [0,0,1], [0.2, 0.2, 0.2, 0.2] ]
 ````
 
+While these examples are contrieved and the simplicity and efficiency of these
+functions could be significantly improved by knowing the dimension of the space
+being worked on (typical case), it shows that very flexible functions can be
+expressed very simply.
 
 ##  Higher Order Looping
 These tools allow loop like code to be written in a more declarative style.
@@ -317,13 +349,13 @@ $.fold($.plus2, 0)([1,1,1,1]); // 4
 $.scan($.plus2, 0)([1,1,1,1]); // [ 0, 1, 2, 3, 4 ]
 ````
 
-### $.iterate(num, fn) :: (initial -> results)
+### $.iterate(num, init, fn) :: results
 Returns a function which iterates `num` times over a `fn` (x -> x)
 by passing the result of the previous iteration into the next call
 to `fn` and collecting the results.
 
 ````javascript
-$.iterate(3, $.prepend("ha"))("ha!"); // [ 'ha!', 'haha!', 'hahaha!' ]
+$.iterate(3, "ha!", $.prepend("ha")); // [ 'ha!', 'haha!', 'hahaha!' ]
 ````
 
 ### $.map(fn) :: (xs -> results)
@@ -331,33 +363,6 @@ An accessor for `Array.prototype.map`, but with the function curried.
 
 ### $.filter(fn) :: (xs -> results)
 An accessor for `Array.prototype.filter`, but with the function curried.
-
-
-## Functional Composition
-Functional composition is done in sequential, rather than algebraic, order
-in interlude. The reasoning for this is there is no real benefit of listing
-the functions in the reverse order in JavaScript. The difference is however
-highlighted by naming it `seq` for sequence, rather than the traditional
-compose.
-
-### $.seq(f [, g [, ..]]) :: (args.. -> ..(g(f(args..))))
-Returns a function which will apply the passed in functions in sequential order.
-
-````javascript
-var isPair = $.seq($.get('length'), $.eq(2)); // (xs -> Boolean)
-[[1,3,2], [2], [], [2,1], [1,2]].filter(isPair); // [ [2,1], [1,2] ]
-````
-
-### $.seq2(f, g) :: (x, y, z, w, u) -> g(f(x, y, z, w, u))
-### $.seq3(f, g, h) :: (x, y, z, w, u) -> h(g(f(x, y, z, w, u)))
-### $.seq4(f, g, h, k) :: (x, y, z, w, u) -> k(h(g(f(x, y, z, w, u))))
-These specific shortcut functions are there to speed up the most common use cases
-of functinal composition; a few functions with a few arguments. Most of the times
-these things aren't significant, and you should not optimize prematurely, but this
-is easy and efficient. Check out this
-[perf](http://jsperf.com/crazyfunctional8)
-for more information on how significant this is.
-
 
 ## Functional Accessors
 ### $.get(prop) :: (el -> el[prop])
