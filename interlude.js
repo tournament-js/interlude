@@ -207,30 +207,14 @@ $.comparing = function () {
     return 0;
   };
 };
-// no double curried version of this, it makes little sense to have
-// the measure is not even a simple GT/EQ/LT and the size of numbers do not mean anything
-// therefore having such a version would just encourage a bad style that would be easiest
 
 // ---------------------------------------------
 // compositions and sequencing
 // ---------------------------------------------
 
-// manually lift/unlift "compose" for efficiency rather than fold/unlift over chain
-// we maintain the lifted/unlifted name semantics of "take the" x || we x
-/*$.compose = function () {
-  var fns = arguments;
-  return function () {
-    var args = arguments;
-    for (var i = fns.length - 1; i >= 0; i -= 1) {
-      args = [fns[i].apply(this, args)];
-    }
-    return args[0];
-  };
-};*/
 
-// same as compose, but applies functions in arguments list order
-// sequence(f1, f2, f3..., fn)(args...) == fn(...(f3(f2(f1(args...)))))
-// $.sequence($.plus(2), $.plus(3), $.times(2))(2) -> 14
+// $.seq(f1, f2, f3..., fn)(args...) == fn(...(f3(f2(f1(args...)))))
+// $.seq($.plus(2), $.plus(3), $.times(2))(2) -> 14
 $.seq = function () {
   var fns = arguments;
   return function () {
@@ -266,28 +250,27 @@ $.seq4 = function (f, g, h, k) {
 // Property accessors
 // ---------------------------------------------
 
-// (potentially) deep diving proprety accessor
 $.get = function (prop) {
-  if (/\./.test(prop)) {
-    var props = prop.split('.');
-    return function (el) {
-      var pos = el;
-      for (var i = 0; i < props.length; i += 1) {
-        pos = pos[props[i]];
-        if (pos === undefined) {
-          return;
-        }
-      }
-      return pos;
-    };
-  }
   return function (el) {
     return el[prop];
   };
 };
 
+$.getDeep = function (str) {
+  var props = str.split('.');
+  return function (el) {
+    var pos = el;
+    for (var i = 0; i < props.length; i += 1) {
+      pos = pos[props[i]];
+      if (pos === undefined) {
+        return;
+      }
+    }
+    return pos;
+  };
+};
+
 // property accessor map -- equivalent to _.pluck or xs.map($.get('prop'))
-// but cannot go deep
 $.pluck = function (prop, xs) {
   var result = [];
   for (var i = 0; i < xs.length; i += 1) {
@@ -373,7 +356,7 @@ $.trace = function (fn, fnName) {
 */
 
 // ---------------------------------------------
-// lifted/unlifted/generalized binary operators
+// max/min
 // ---------------------------------------------
 
 $.maximum = function (xs) {
@@ -531,7 +514,7 @@ $.insertBy = function (cmp, xs, x) {
 };
 
 $.insert = function (xs, x) {
-  return $.insertBy($.subtract2, xs, x);
+  return $.insertBy($.compare(), xs, x);
 };
 
 $.deleteBy = function (eq, xs, x) {

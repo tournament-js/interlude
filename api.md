@@ -374,7 +374,8 @@ objs.map($.get('id')); // [ 1, 2, 3 ]
 objs.map($.get('s')).join(''); // 'hey'
 ````
 
-Properties can also be extracted from more than one level down:
+### $.getDeep(prop) :: (el -> el[p1][..][pN])
+Allows property extraction from more than one level down:
 
 ````javascript
 var objs = [
@@ -399,8 +400,8 @@ or `$.neq(/*undefined*/)` to be explicit about the inequality test.
 Shorthand for of a common use-case for `Array.prototype.map`:
 extracting property values.
 
-Behaviourally equivalent to `xs.map($.get(prop))`, but `$.get` can
-scan deeply wheras this is does a quick iteration without extra function calls.
+Behaviourally equivalent to `xs.map($.get(prop))`, but skipping the
+extra function call per element.
 
 ````javascript
 $.collect('length', [ [1,3,2],  [2], [1,2] ]); // [3,1,2]

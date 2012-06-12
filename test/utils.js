@@ -118,7 +118,7 @@ exports["test#get/set"] = function () {
   , {id: 2, s: "e", obj: {ary: [3,4]} }
   , {id: 3, s: "y", obj: {ary: [5,6]} }
   ];
-  a.eql(objs.map($.get('obj.ary.1')), [ 2, 4, 6 ], "deep get on objs.obj.ary.1");
+  a.eql(objs.map($.getDeep('obj.ary.1')), [ 2, 4, 6 ], "deep get on objs.obj.ary.1");
 
   a.eql([[1],[2],[3]].map($.get(0)), [1,2,3], "ary.map($.get(0))");
   a.eql($.pluck(0, [[1],[2],[3]]), [1,2,3], "$.pluck(0, ary))");
@@ -189,7 +189,28 @@ exports["test#list operations"] = function () {
   //a.eql(res, [ [[2],[2]] , [[1],[3]] ], "partition using $.equality");
   a.eql($.partition($.eq(2), [1,3,2,1,2]), [[2,2], [1,3,1]], "partition basic");
 
+  // insert
+  a.eql($.insert([1,2,3,4],2), [1,2,2,3,4], "insert in middle");
+  a.eql($.insert([1,2,3,4],5), [1,2,3,4,5], "insert at end");
+  a.eql($.insert([1,2,3,4],0), [0,1,2,3,4], "insert at beginning");
 
+  var xs = $.range(10);
+  $.insert(xs, 5);
+  a.equal(xs.length, 10+1, "insert modifies");
+
+  a.eql($.insertBy($.compare('-'), [4,3,2,1], 2), [4,3,2,2,1], "insert desc mid");
+  a.eql($.insertBy($.compare('-'), [4,3,2,1], 0), [4,3,2,1,0], "insert desc end");
+  a.eql($.insertBy($.compare('-'), [4,3,2,1], 5), [5,4,3,2,1], "insert desc end");
+
+  var xs = [ [5,1], [4,2], [3,3] ];
+  var res = $.insertBy($.comparing(1), xs.slice(), [8,2]);
+  a.eql(res, [ [5,1], [8,2], [4,2], [3,3] ], "insertBy comparing (1) mid");
+  var res = $.insertBy($.comparing(1), xs.slice(), [8,0]);
+  a.eql(res, [ [8,0], [5,1], [4,2], [3,3] ], "insertBy comparing (1) beg");
+  var res = $.insertBy($.comparing(1), xs.slice(), [8,4]);
+  a.eql(res, [ [5,1], [4,2], [3,3], [8,4] ], "insertBy comparing (1) end");
+
+  // delete
   var res = $.deleteBy($.equality(1), [[1,3],[2,1],[1,4]], [5,1]);
   a.eql(res, [[1,3], [1,4]], "delete by equality(1)");
 
