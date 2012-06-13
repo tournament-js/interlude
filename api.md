@@ -68,13 +68,20 @@ An accessor for the negated Array.prototype.some, but with the function curried.
 ### $.elem(xs) :: (x -> Boolean)
 ### $.notElem(xs) :: (x -> Boolean)
 
-The membership tests are accessors for Array.prototype.indexOf,
+The membership tests are accessors for `Array.prototype.indexOf`,
 but with the array curried.
 
 ```javascript
 [1,2,3,4,3].filter($.elem([1,3])); // [ 1, 3, 3 ]
 [1,2,3,4,3].filter($.notElem([1,3])); // [ 2, 4 ]
 ````
+
+### $.partition(xs, fn) :: [ys, zs]
+The `partition` function takes a predicate, an array and returns
+a 2-length array of arrays of elements which do and do not satisfy the
+predicate, respectively; i.e.,
+
+`$.partition(p, xs) equals [xs.filter(p), xs.filter($.not(p))]`
 
 ## Math
 All Math functions operate purely on Number instances, and gcd & lcm
@@ -436,14 +443,6 @@ items;
 //   { id: 2, name: 'Bam' },
 //   { id: 3, name: 'Jo' } ]
 ````
-
-
-### $.partition(fn, xs) :: [ys, zs]
-The `partition` function takes a predicate, an array and returns
-the pair of arrays of elements which do and do not satisfy the
-predicate, respectively; i.e.,
-
-`$.partition(p, xs) equals [xs.filter(p), xs.filter($.not(p))]`
 
 ### $.intersect(xs, ys) :: zs
 The 'intersect' function takes the intersection of two arrays.

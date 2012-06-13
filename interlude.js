@@ -63,6 +63,10 @@ $.notElem = function (xs) {
   };
 };
 
+$.partition = function (xs, fn) {
+  return [xs.filter(fn), xs.filter($.not(fn))];
+};
+
 // ---------------------------------------------
 // Math
 // ---------------------------------------------
@@ -192,43 +196,6 @@ $.invoke = function (method) {
   return function (xs) {
     var fn = xs[method];
     return fn.apply(xs, args);
-  };
-};
-
-// ---------------------------------------------
-// Comparison
-// ---------------------------------------------
-
-$.equality = function () {
-  var pargs = arguments;
-  return function (x, y) {
-    for (var i = 0, len = pargs.length; i < len; i += 1) {
-      if (x[pargs[i]] !== y[pargs[i]]) {
-        return false;
-      }
-    }
-    return true;
-  };
-};
-
-$.compare = function (dir) {
-  var factor = parseInt((dir || '+') + 1); // => 1 by default
-  return function (x, y) {
-    return factor * (x - y);
-  };
-};
-
-// result of this can be passed directly to Array::sort
-$.comparing = function () {
-  var args = slice.call(arguments, 0);
-  return function (x, y) {
-    for (var i = 0, len = args.length; i < len; i += 2) {
-      var factor = parseInt((args[i + 1] || '+') + 1); // => 1 by default
-      if (x[args[i]] !== y[args[i]]) {
-        return factor * (x[args[i]] - y[args[i]]);
-      }
-    }
-    return 0;
   };
 };
 
@@ -379,6 +346,44 @@ $.trace = function (fn, fnName) {
 };
 */
 
+
+// ---------------------------------------------
+// Comparison
+// ---------------------------------------------
+
+$.equality = function () {
+  var pargs = arguments;
+  return function (x, y) {
+    for (var i = 0, len = pargs.length; i < len; i += 1) {
+      if (x[pargs[i]] !== y[pargs[i]]) {
+        return false;
+      }
+    }
+    return true;
+  };
+};
+
+$.compare = function (dir) {
+  var factor = parseInt((dir || '+') + 1); // => 1 by default
+  return function (x, y) {
+    return factor * (x - y);
+  };
+};
+
+// result of this can be passed directly to Array::sort
+$.comparing = function () {
+  var args = slice.call(arguments, 0);
+  return function (x, y) {
+    for (var i = 0, len = args.length; i < len; i += 2) {
+      var factor = parseInt((args[i + 1] || '+') + 1); // => 1 by default
+      if (x[args[i]] !== y[args[i]]) {
+        return factor * (x[args[i]] - y[args[i]]);
+      }
+    }
+    return 0;
+  };
+};
+
 // ---------------------------------------------
 // max/min
 // ---------------------------------------------
@@ -390,11 +395,6 @@ $.maximum = function (xs) {
 $.minimum = function (xs) {
   return Math.min.apply(Math, xs);
 };
-
-// What to use:?
-// metric/getter faster for single property case
-// but comparison function easier to generalize
-// no curtom metric writing functions necessary!
 
 // using compare functions:
 // empty array => return undefined
@@ -415,7 +415,6 @@ $.minimumBy = function (cmp, xs) {
   }
   return min;
 };
-
 
 // ---------------------------------------------
 // List operations
@@ -459,11 +458,6 @@ $.zip = function () {
     results.push(els);
   }
   return results;
-};
-
-// $.partition($.equality(0)([2]), [[1], [2], [3], [2]])
-$.partition = function (fn, xs) {
-  return [xs.filter(fn), xs.filter($.not(fn))];
 };
 
 // Ordered Array operations
@@ -524,22 +518,7 @@ $.intersect = function (xs, ys) {
   return $.intersectBy($.eq2, xs, ys);
 };
 
-// nub, build up a list of unique (w.r.t. equality)
-// elements by checking if current is not 'equal' to anything in the buildup
-// $.curry($.nubBy, $.eq) === $.nub
-// http://jsperf.com/nubnubbytest1 => indexOf clearly beats calling $.nubBy($.eq2)
-$.nub = function (xs) {
-  var result = [];
-  for (var i = 0, len = xs.length; i < len; i += 1) {
-    if (result.indexOf(xs[i]) < 0) {
-      result.push(xs[i]);
-    }
-  }
-  return result;
-};
-
 // nubBy builds up a list of unique (w.r.t. provided equality function) similarly to nub
-// this can also take the curried $.equality now because of it's looseness
 $.nubBy = function (eq, xs) {
   var result = []
     , resLen = 0
@@ -560,8 +539,17 @@ $.nubBy = function (eq, xs) {
   return result;
 };
 
-$.group = function (xs) {
-  return $.groupBy($.eq2, xs);
+// nub, build up a list of unique (w.r.t. equality)
+// elements by checking if current is not 'equal' to anything in the buildup
+// http://jsperf.com/nubnubbytest1 => indexOf clearly beats calling $.nubBy($.eq2)
+$.nub = function (xs) {
+  var result = [];
+  for (var i = 0, len = xs.length; i < len; i += 1) {
+    if (result.indexOf(xs[i]) < 0) {
+      result.push(xs[i]);
+    }
+  }
+  return result;
 };
 
 $.groupBy = function (eq, xs) {
@@ -575,6 +563,10 @@ $.groupBy = function (eq, xs) {
     result.push(sub);
   }
   return result;
+};
+
+$.group = function (xs) {
+  return $.groupBy($.eq2, xs);
 };
 
 $.unionBy = function (eq, xs, ys) {
@@ -599,24 +591,7 @@ $.difference = function (xs, ys) {
   return ys.reduce($.delete, xs.slice());
 };
 
-// ---------------------------------------------
-// maybe do some string things
-// ---------------------------------------------
 
-/*
-// mostly useful for taking bits out of a string in an unconventional way
-// maybe not so useful..
-$.matches = function (regx) {
-  return function (str) {
-    return (str.match(regx) || []).join('');
-  };
-};
+// end - export
 
-// ["kYoto", "wOo", "wUt", "SUCK it!"].map($.capitals).join(''); // 'YOUSUCK'
-$.capitals = $.matches(/[A-Z]/g);
-*/
-
-// ---------------------------------------------
-// Export
-// ---------------------------------------------
 module.exports = $;

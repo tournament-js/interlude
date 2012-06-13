@@ -8,6 +8,12 @@ exports['test#common'] = function () {
   a.ok(!$.has({}, 'toString'), "{} $.has no (own) toString key");
   a.ok($.has({wee:2}, 'wee'), "obj $.has its own fresh key");
   a.ok($.not(false), "!false");
+  a.eql($.range(5).filter($.elem($.range(4))), $.range(4), "range/elem filter");
+  a.eql($.range(5).filter($.notElem($.range(4))), [5], "range/elem filter");
+
+  //var res = $.partition($.equality(0)([2]), [[1], [2], [3], [2]]);
+  //a.eql(res, [ [[2],[2]] , [[1],[3]] ], "partition using $.equality");
+  a.eql($.partition([1,3,2,1,2], $.eq(2)), [[2,2], [1,3,1]], "partition basic");
 };
 
 exports['test#math'] = function () {
@@ -20,42 +26,6 @@ exports['test#math'] = function () {
   a.equal($.pow(2)(4), 16, "4^2 === 16");
   a.equal($.logBase(2)(16), 4, "4 is log2 of 16");
   a.equal($.logBase(10)(100), 2, "2 is log10 of 1000");
-};
-
-exports['test#uncurried binary ops'] = function () {
-  a.equal($.plus2(3,2), 5, "2+3 === 5");
-  a.equal($.minus2(3,2), 1, "3-2 === 1");
-  a.equal($.times2(3,5), 15, "5*3 === 15");
-  a.equal($.and2(false, false), false, "false && false === false");
-  a.equal($.and2(true, false), false, "true && false === false");
-  a.equal($.and2(false, true), false, "false && true === false");
-  a.equal($.and2(true, true), true, "true && true === true");
-  a.equal($.or2(false, false), false, "false || false === false");
-  a.equal($.or2(true, false), true, "true || false === true");
-  a.equal($.or2(false, true), true, "false || true === true");
-  a.equal($.or2(true, true), true, "true || true === true");
-
-  a.equal($.eq2(1,1), true, "1 === 1");
-  a.equal($.eq2(1,"1"), false, "1 === '1'");
-  a.equal($.gt2(3,2), true, "3 > 2");
-  a.equal($.gt2(3,3), false, "3 ! > 2");
-  a.equal($.lt2(2,3), true, "2 < 3");
-  a.equal($.lt2(3,3), false, "3 ! < 3");
-  a.equal($.gte2(3,3), true, "3 >= 3");
-  a.equal($.gte2(2,3), false, "2 ! >= 3");
-  a.equal($.lte2(2,2), true, "2 <= 2");
-  a.equal($.lte2(2,1), false, "2 ! <= 1");
-
-  a.eql($.prepend2([1,2], [3]), [3,1,2], "prepend2([1, 2], [3]) === [3,1,2]");
-};
-
-exports['test#curried binary ops'] = function () {
-  a.equal($.plus(3)(2), 5, "2+3 === 5");
-  a.equal($.minus(3)(5), 2, "5-3 === 2");
-  a.equal($.times(2)(3), 6, "2*3 === 6");
-  a.equal($.divide(2)(6), 3, "6/2 === 3");
-  a.eql($.append([1,2])([3]), [3,1,2], "(++[1, 2]) [3] === [3, 1, 2]");
-  a.eql($.prepend([1,2])([3]), [1,2,3], "([1, 2]++) [3] === [1, 2, 3]");
 };
 
 exports["test#higher order looping"] = function () {
@@ -71,12 +41,6 @@ exports["test#higher order looping"] = function () {
   a.eql([[1,3,5],[2,2,2]].filter($.none($.eq(2))), [[1,3,5]], "filter none eq");
 };
 
-exports["test#folded shortcuts"] = function () {
-  a.equal($.sum([1,2,3,4]), 10, "sum [1,2,3,4] === 10");
-  a.equal($.product([1,2,3,4]), 24, "product [1,2,3,4] === 24");
-  a.eql($.flatten([[1,2,3],[4],[[5]]]), [1,2,3,4,[5]], "$.flatten");
-};
-
 exports["test#lifted functions"] = function () {
   a.equal($.maximum([1,3,2,5,2]), 5, "max [1,3,2,5,2] === 5");
   a.equal($.minimum([1,3,2,5,2]), 1, "min [1,3,2,5,2] === 1");
@@ -90,10 +54,6 @@ exports["test#lifted functions"] = function () {
   a.eql(mbRes, [2], 'minBy returns the element for which length is maximal');
   var collectRes = $.minimum($.pluck('length', [ [1,3,2], [2], [2,3] ]));
   a.equal(collectRes, 1, "minymum of collects simply returns the value");
-
-  a.equal($.add(1,2,3,4), 10, "add(1,2,3,4) === 10");
-  a.equal($.multiply(1,2,3,4), 24, "multiply(1,2,3,4) === 24");
-  a.eql($.concat([1,2,3], [4], [[5]]), [1,2,3,4,[5]], "$.concat");
 };
 
 
@@ -140,25 +100,6 @@ exports["test#zipWith/zip"] = function () {
 };
 
 exports["test#ordering"] = function () {
-  a.equal($.gt(5)(5), false, "5 ! > 5");
-  a.equal($.gt(5)(6), true, "6 > 5");
-  a.equal($.gt(5)(4), false, "4 ! > 5");
-
-  a.equal($.gte(5)(5), true, "5 >= 5");
-  a.equal($.gte(5)(6), true, "6 >= 5");
-  a.equal($.gte(5)(4), false, "4 ! >= 5");
-
-  a.equal($.lt(5)(5), false, "5 ! < 5");
-  a.equal($.lt(5)(6), false, "6 ! < 5");
-  a.equal($.lt(5)(4), true, "4 < 5");
-
-  a.equal($.lte(5)(5), true, "5 <= 5");
-  a.equal($.lte(5)(6), false, "6 ! <= 5");
-  a.equal($.lte(5)(4), true, "4 <= 5");
-
-  a.equal($.eq(5)(5), true, "5 === 5");
-  a.equal($.lt(5)('5'), false, "5 !== '5'");
-
   // compare
   a.eql([[1,3],[1,2],[1,5]].sort($.comparing(1)), [[1,2],[1,3],[1,5]], "comparing");
   a.eql([{a:2},{a:1}].sort($.comparing('a')), [{a:1}, {a:2}], "comparing objs");
@@ -178,11 +119,6 @@ exports["test#ordering"] = function () {
 
 };
 
-exports["test#membership"] = function () {
-  a.eql($.range(5).filter($.elem($.range(4))), $.range(4), "range/elem filter");
-  a.eql($.range(5).filter($.notElem($.range(4))), [5], "range/elem filter");
-};
-
 exports["test#list operations"] = function () {
   var eq = $.equality('length');
 
@@ -191,10 +127,6 @@ exports["test#list operations"] = function () {
 
   var res = $.intersectBy($.equality(1), [[1,3],[2,1],[1,4]], [[1,2], [2,4]]);
   a.eql(res, [[1,4]], "intersectBy crazy, result is in first list");
-
-  //var res = $.partition($.equality(0)([2]), [[1], [2], [3], [2]]);
-  //a.eql(res, [ [[2],[2]] , [[1],[3]] ], "partition using $.equality");
-  a.eql($.partition($.eq(2), [1,3,2,1,2]), [[2,2], [1,3,1]], "partition basic");
 
   // insert
   a.eql($.insert([1,2,3,4],2), [1,2,2,3,4], "insert in middle");
@@ -267,14 +199,4 @@ exports["test#list operations"] = function () {
   var res = $.groupBy($.equality(1), [[1,3],[2,1],[4,1],[2,3]]);
   a.eql(res, [ [[1,3]], [[2,1],[4,1]], [[2,3]] ], "groupBy equality on 1");
 };
-
-
-exports["test#function wrappers"] = function () {
-  // TODO: hardest one
-};
-
-
-
-
-
 
