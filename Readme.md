@@ -58,7 +58,12 @@ $.nubBy(notCoprime, $.range(2, 20));
 // [ 2, 3, 5, 7, 11, 13, 17, 19 ]
 ````
 
-Read the [API](https://github.com/clux/interlude/blob/master/api.md)
+Read the short APIs of the re-exported modules:
+
+- operators : [API](https://github.com/clux/operators/blob/master/api.md) :
+[github page](https://github.com/clux/operators)
+
+Read the [core API](https://github.com/clux/interlude/blob/master/api.md)
 
 ## Installation
 

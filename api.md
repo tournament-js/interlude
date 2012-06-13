@@ -3,8 +3,6 @@ For document brevity, $ is assumed to be the require placement of
 interlude, fn/f/g/h are assumed to be function names, anything ending in s
 is an array, and when applicable, x is related to xs by being an element of.
 
-
-# Interlude
 ## Functional Helpers
 ### $.id(x) :: x
 The identity function f(x) = x.

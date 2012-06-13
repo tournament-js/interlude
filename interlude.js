@@ -1,6 +1,6 @@
 var slice = Array.prototype.slice
   , hasOwnProp = Object.prototype.hasOwnProperty
-  , $ = require('./operators');
+  , $ = require('operators');
 
 // ---------------------------------------------
 // Functional Helpers
