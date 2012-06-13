@@ -130,6 +130,14 @@ $.range = function (start, stop, step) {
   return range;
 };
 
+$.replicate = function (num, el) {
+  var result = [];
+  for (var i = 0; i < num; i += 1) {
+    result.push(el);
+  }
+  return result;
+};
+
 // this arguably needs a curried version, waiting for initial
 $.iterate = function (times, init, fn) {
   var result = [init];
@@ -150,9 +158,9 @@ $.find = function (xs, fn) {
 
 
 // scan(fn, z)([x1, x2, ...]) == [z, f(z, x1), f(f(z, x1), x2), ...]
-$.scan = function (xs, initial, fn) {
+$.scan = function (xs, fn, initial) {
   var result = [initial];
-  for (var i = 0; i < xs.length; i += 1) {
+  for (var i = 0, len = xs.length ; i < len; i += 1) {
     result.push(fn(result[i], xs[i]));
   }
   return result;
@@ -194,7 +202,7 @@ $.invoke = function (method) {
 $.equality = function () {
   var pargs = arguments;
   return function (x, y) {
-    for (var i = 0; i < pargs.length; i += 1) {
+    for (var i = 0, len = pargs.length; i < len; i += 1) {
       if (x[pargs[i]] !== y[pargs[i]]) {
         return false;
       }
@@ -214,7 +222,7 @@ $.compare = function (dir) {
 $.comparing = function () {
   var args = slice.call(arguments, 0);
   return function (x, y) {
-    for (var i = 0; i < args.length; i += 2) {
+    for (var i = 0, len = args.length; i < len; i += 2) {
       var factor = parseInt((args[i + 1] || '+') + 1); // => 1 by default
       if (x[args[i]] !== y[args[i]]) {
         return factor * (x[args[i]] - y[args[i]]);
@@ -235,7 +243,7 @@ $.seq = function () {
   return function () {
     // only need to apply the first with initial args
     var res = fns[0].apply(this, arguments);
-    for (var i = 1; i < fns.length; i += 1) {
+    for (var i = 1, len = fns.length; i < len; i += 1) {
       res = fns[i](res); // rest chain in result from previous
     }
     return res;
@@ -272,10 +280,11 @@ $.get = function (prop) {
 };
 
 $.getDeep = function (str) {
-  var props = str.split('.');
+  var props = str.split('.')
+    , len = props.length;
   return function (el) {
     var pos = el;
-    for (var i = 0; i < props.length; i += 1) {
+    for (var i = 0; i < len; i += 1) {
       pos = pos[props[i]];
       if (pos === undefined) {
         return;
@@ -288,7 +297,7 @@ $.getDeep = function (str) {
 // property accessor map -- equivalent to _.pluck or xs.map($.get('prop'))
 $.pluck = function (prop, xs) {
   var result = [];
-  for (var i = 0; i < xs.length; i += 1) {
+  for (var i = 0, len = xs.length; i < len; i += 1) {
     result[i] = xs[i][prop];
   }
   return result;
@@ -382,18 +391,31 @@ $.minimum = function (xs) {
   return Math.min.apply(Math, xs);
 };
 
-// generalized versions:
-$.maximumBy = function (fn, xs) {
-  var res = xs.map(fn)
-    , idx = res.indexOf($.maximum(res));
-  return xs[idx];
+// What to use:?
+// metric/getter faster for single property case
+// but comparison function easier to generalize
+// no curtom metric writing functions necessary!
+
+// using compare functions:
+// empty array => return undefined
+$.maximumBy = function (cmp, xs) {
+  for (var i = 1, max = xs[0], len = xs.length; i < len; i += 1) {
+    if (cmp(xs[i], max) > 0) {
+      max = xs[i];
+    }
+  }
+  return max;
 };
 
-$.minimumBy = function (fn, xs) {
-  var res = xs.map(fn)
-    , idx = res.indexOf($.minimum(res));
-  return xs[idx];
+$.minimumBy = function (cmp, xs) {
+  for (var i = 1, min = xs[0], len = xs.length; i < len; i += 1) {
+    if (cmp(xs[i], min) < 0) {
+      min = xs[i];
+    }
+  }
+  return min;
 };
+
 
 // ---------------------------------------------
 // List operations
@@ -444,12 +466,50 @@ $.partition = function (fn, xs) {
   return [xs.filter(fn), xs.filter($.not(fn))];
 };
 
+// Ordered Array operations
+
+$.insertBy = function (cmp, xs, x) {
+  for (var i = 0, len = xs.length; i < len; i += 1) {
+    if (cmp(xs[i], x) >= 0) {
+      xs.splice(i, 0, x);
+      return xs;
+    }
+  }
+  xs.push(x);
+  return xs;
+};
+
+$.insert = function (xs, x) {
+  return $.insertBy($.compare(), xs, x);
+};
+
+$.deleteBy = function (eq, xs, x) {
+  for (var i = 0, len = xs.length; i < len; i += 1) {
+    if (eq(xs[i], x)) {
+      xs.splice(i, 1);
+      return xs;
+    }
+  }
+  return xs;
+};
+
+// behaviourally equivalent to $.deleteBy($.eq2, xs, x)
+$.delete = function (xs, x) {
+  var idx = xs.indexOf(x);
+  if (idx >= 0) {
+    xs.splice(idx, 1);
+  }
+  return xs;
+};
+
+// "Set" operations
+
 $.intersectBy = function (eq, xs, ys) {
   var result = [];
   if (xs.length && ys.length) {
-    for (var i = 0; i < xs.length; i += 1) {
+    for (var i = 0, iLen = xs.length; i < iLen; i += 1) {
       var x = xs[i];
-      for (var j = 0; j < ys.length; j += 1) {
+      for (var j = 0, jLen = ys.length; j < jLen; j += 1) {
         if (eq(x, ys[j])) {
           result.push(x);
           break;
@@ -470,7 +530,7 @@ $.intersect = function (xs, ys) {
 // http://jsperf.com/nubnubbytest1 => indexOf clearly beats calling $.nubBy($.eq2)
 $.nub = function (xs) {
   var result = [];
-  for (var i = 0; i < xs.length; i += 1) {
+  for (var i = 0, len = xs.length; i < len; i += 1) {
     if (result.indexOf(xs[i]) < 0) {
       result.push(xs[i]);
     }
@@ -507,48 +567,14 @@ $.group = function (xs) {
 $.groupBy = function (eq, xs) {
   var result = []
     , j, sub;
-  for (var i = 0; i < xs.length; i = j) {
+  for (var i = 0, len = xs.length; i < len; i = j) {
     sub = [xs[i]];
-    for (j = i + 1; j < xs.length && eq(xs[i], xs[j]); j += 1) {
+    for (j = i + 1; j < len && eq(xs[i], xs[j]); j += 1) {
       sub.push(xs[j]);
     }
     result.push(sub);
   }
   return result;
-};
-
-$.insertBy = function (cmp, xs, x) {
-  for (var i = 0; i < xs.length; i += 1) {
-    if (cmp(xs[i], x) >= 0) {
-      xs.splice(i, 0, x);
-      return xs;
-    }
-  }
-  xs.push(x);
-  return xs;
-};
-
-$.insert = function (xs, x) {
-  return $.insertBy($.compare(), xs, x);
-};
-
-$.deleteBy = function (eq, xs, x) {
-  for (var i = 0; i < xs.length; i += 1) {
-    if (eq(xs[i], x)) {
-      xs.splice(i, 1);
-      return xs;
-    }
-  }
-  return xs;
-};
-
-// behaviourally equivalent to $.deleteBy($.eq2, xs, x)
-$.delete = function (xs, x) {
-  var idx = xs.indexOf(x);
-  if (idx >= 0) {
-    xs.splice(idx, 1);
-  }
-  return xs;
 };
 
 $.unionBy = function (eq, xs, ys) {

@@ -4,81 +4,6 @@ interlude, fn/f/g/h are assumed to be function names, anything ending in s
 is an array, and when applicable, x is related to xs by being an element of.
 
 
-# Operators
-## Binary Operators (2-Argument Versions)
-These are simple two argument lambdas which are useful occasionally.
-The function name ending with the number 2 is a naming convention consistently
-used throughout the library. It means the function takes 2 arguments and
-returns immediately.
-
-### $.plus2(x, y) :: x + y
-### $.minus2(x, y) :: x - y
-### $.times2(x, y) :: x * y
-### $.divide2(x, y) :: x / y
-### $.div2(x, y) :: floor(x/y)
-### $.mod2(x, y) :: x % y
-### $.append2(xs, ys) :: xs.concat(ys)
-### $.prepend2(xs, ys) :: ys.concat(xs)
-### $.and2(x, y) :: x && y
-### $.or2(x, y) :: x || y
-### $.eq2(x, y) :: x === y
-### $.neq2(x, y) :: x !== y
-### $.gt2(x, y) :: x > y
-### $.lt2(x, y) :: x < y
-### $.gte2(x, y) :: x >= y
-### $.lte2(x, y) :: x <= y
-
-````javascript
-$.plus2(2, 3); // 5
-$.or2(false, true); // true
-````
-
-## Curried Binary operators
-This section is useful for maps, as one of their arguments are curried,
-cutting down the amount of very basic closured lambdas you make.
-
-### $.plus(y) :: (x -> x + y)
-### $.minus(y) :: (x -> x - y)
-### $.times(y) :: (x -> x * y)
-### $.divide(y) :: (x -> x / y)
-### $.div(y) :: (x -> floor(x/y))
-### $.mod(y) :: (x -> x % y)
-### $.append(ys) :: (xs -> xs.concat(ys))
-### $.prepend(ys) :: (xs -> ys.concat(xs))
-
-````javascript
-[1,2,3,4,5].map($.plus(1)); // [2, 3, 4, 5, 6]
-[1,2,3,4,5].map($.minus(1)); // [0, 1, 2, 3, 4]
-[1,2,3,4,5].map($.times(2)); // [2, 4, 6, 8, 10]
-[2,4,6,8].map($.divide(2)); // [1, 2, 3, 4]
-[1,2,3,4].map($.div(2)); // [0, 1, 1, 2]
-[[1,2], [2,3]].map($.append([-1, 0])); // [ [1,2,-1,0], [2,3,-1,0] ]
-[[1,2], [2,3]].map($.prepend([-1, 0])); // [ [-1,0,1,2], [-1,0,2,3] ]
-````
-
-Due to the dynamic nature of JavaScript operators, a lot of these also work on
-strings.
-
-````javascript
-["hello", "hi"].map($.plus("world")); // ["helloworld", "hiworld"]
-["hello", "hi"].map($.append("world")); // ["helloworld", "hiworld"]
-["hello", "hi"].map($.prepend("world")); // ["worldhello", "worldhi"]
-````
-
-### $.gt(y) :: (x -> x > y)
-### $.lt(y) :: (x -> x < y)
-### $.eq(y) :: (x -> x === y)
-### $.neq(y) :: (x -> x !== y)
-### $.gte(y) :: (x -> x >= y)
-### $.lte(y) :: (x -> x <= y)
-
-Curried comparison is useful for filters and combinations with $.any / $.all.
-
-````javascript
-[1,4,2,5,2,3].filter($.gt(3)); // [4,5]
-[[1,3,5], [2,3,1]].filter($.any($.gte(5))); // [ [ 1, 3, 5 ] ]
-````
-
 # Interlude
 ## Functional Helpers
 ### $.id(x) :: x
@@ -93,7 +18,7 @@ $.id(x) === x; // true
 No operation. Does nothing.
 
 ````javascript
-var log = (console) ? console.log || $.noop
+var log = (console) ? console.log : $.noop;
 log("log this if possible");
 ````
 
@@ -316,12 +241,12 @@ functions could be improved by knowing the dimension of the space
 being worked on (typical case) to help inlining a smaller specific function,
 it shows that very flexible higher order functions can be expressed very simply.
 
-##  Higher Order Looping
+##  Looping Constructs
 These tools allow loop like code to be written in a more declarative style.
 
-### $.range(Int stop) :: [1 , 2 , .. , stop]
-### $.range(Int start, stop) :: [start, start + 1, .. , stop]
-### $.range(Int start, Int stop, Int step) :: [start, start + step, ..]
+### $.range(stop) :: [1 , 2 , .. , stop]
+### $.range(start, stop) :: [start, start + 1, .. , stop]
+### $.range(start, stop, step) :: [start, start + step, ..]
 Returns an inclusive range from start to stop, where start and step defaults to 1.
 The if step is >1, the range may not include the stop.
 
@@ -331,6 +256,9 @@ $.range(0, 4); // [ 0 , 1, 2, 3, 4 ]
 $.range(1, 6, 2); // [ 1, 3, 5 ]
 $.range(0, 6, 2); // [ 0, 2, 4, 6 ]
 ````
+
+### $.replicate(n, x)
+Returns an `n` length Array with the element `x` at every position.
 
 ### $.iterate(len, x, fn) :: results
 Returns a size `len` array of repeated applications of `fn` to `x`:
@@ -348,7 +276,7 @@ $.collect(0, fibPairs);
 // [ 0, 1, 1, 2, 3, 5, 8, 13 ]
 ````
 
-### $.scan(xs, start, fn) :: results
+### $.scan(xs, fn, start) :: results
 Operationally equivalent to `xs.reduce(fn, start)`,
 but additionally collects all the intermediate results. Thus:
 
@@ -358,21 +286,21 @@ This does not use `Array.prototype.reduce` under the covers,
 so 3rd and 4th arguments will always be undefined inside `fn`.
 
 ````javascript
-$.fold($.plus2, 0)([1,1,1,1]); // 4
-$.scan($.plus2, 0)([1,1,1,1]); // [ 0, 1, 2, 3, 4 ]
+[1,1,1,1].reduce($.plus2, 0); // 4
+$.scan([1,1,1,1], $.plus2, 0); // [ 0, 1, 2, 3, 4 ]
 ````
 
 ### $.find(fn, xs) :: x
+TODO: technically firstBy
 Finds the first element `x` in `xs` for which `fn(x)` is true.
+TODO: $.copy for shallow copy?
+TODO: $.extend?
+TODO: $.clone for deep copy?
+TODO: use xtend?
 
 
-### $.reduce(fn [, start]) :: (xs -> results)
-An accessor for `Array.prototype.reduce`, but with the function curried.
 
-````javascript
-var product = $.fold($.times2, 1);
-var flatten = $.fold($.append2, []);
-````
+## Curried Prototype Method Accessors
 
 ### $.map(fn) :: (xs -> results)
 An accessor for `Array.prototype.map`, but with the function curried.
@@ -380,19 +308,29 @@ An accessor for `Array.prototype.map`, but with the function curried.
 ### $.filter(fn) :: (xs -> results)
 An accessor for `Array.prototype.filter`, but with the function curried.
 
+### $.reduce(fn [, start]) :: (xs -> results)
+An accessor for `Array.prototype.reduce`, but with the function curried.
+
+````javascript
+var product = $.reduce($.times2, 1);
+var flatten = $.reduce($.append2, []);
+````
+
 ### $.invoke(method [, args..]) :: (x -> result)
 An accessor for any method on the prototype of the type of `x`.
 
 ````javascript
-var xs = [1, 2, 3, 4];
-$.invoke('join', ''));
-
-$.invoke('splice', 1, 0, 3)(xs);
+[[1,2], [3,4]].map($.invoke('join','w')); // [ '1w2', '3w4']
 ````
 
-## Functional Accessors
+## Property Accessors
+These are shortcut functions for extracting a property of an element.
+Since this is easier natuarlly to do for one element by using the dot operator,
+the use of these functions are primarily for mass extraction via
+`Array.prototype.map`.
+
 ### $.get(prop) :: (el -> el[prop])
-Allows simple property extraction on an element. Useful for mapping
+Allows simple property extraction on an element:
 
 ````javascript
 var objs = [{id: 1, s: "h"}, {id: 2, s: "e"}, {id: 3, s: "y"}];
@@ -400,8 +338,9 @@ objs.map($.get('id')); // [ 1, 2, 3 ]
 objs.map($.get('s')).join(''); // 'hey'
 ````
 
-### $.getDeep(prop) :: (el -> el[p1][..][pN])
-Allows property extraction from more than one level down:
+### $.getDeep(props) :: (el -> el[p1][..][pN])
+Allows property extraction from more than one level down, via a `.` delimited
+string of property names:
 
 ````javascript
 var objs = [
@@ -412,8 +351,21 @@ var objs = [
 objs.map($.get('obj.ary.1')); // [ 2, 4, 6 ]
 ````
 
+### $.pluck(prop, xs) :: ys
+Shorthand for of a common use-case for `Array.prototype.map`:
+extracting simple (not deeply nested) property values.
+
+Behaviourally equivalent to `xs.map($.get(prop))`, but skipping the
+extra function call per element.
+
+````javascript
+$.collect('length', [ [1,3,2],  [2], [1,2] ]); // [ 3, 1, 2 ]
+````
+
+#### Accessors Note
 If a property is undefined on an element (or something is, in the middle
-of a deep property search), undefined is returned.
+of a deep property search), undefined is returned (as if you had written the lambda
+yourself).
 To only get the defined values from a map of this style; filter by `$.neq()` -
 or `$.neq(/*undefined*/)` to be explicit about the inequality test.
 
@@ -422,62 +374,31 @@ or `$.neq(/*undefined*/)` to be explicit about the inequality test.
 [{a:5}, {}].map($.get('a')).filter($.neq()); // [ 5 ]
 ````
 
-### $.pluck(prop, xs) :: ys
-Shorthand for of a common use-case for `Array.prototype.map`:
-extracting property values.
-
-Behaviourally equivalent to `xs.map($.get(prop))`, but skipping the
-extra function call per element.
-
-````javascript
-$.collect('length', [ [1,3,2],  [2], [1,2] ]); // [3,1,2]
-````
-
-## Array Functions
-These take an array `xs` and does the semantically named operation.
+## List Operations
+Dynamic Data.List. Many of these functions (somewhat remarkably) work on strings
+as arrays.
 
 ### $.maximum(xs) :: Number
 ### $.minimum(xs) :: Number
 ### $.maximumBy(fn, xs) :: xs[maxidx]
 ### $.minimumBy(fn, xs) :: xs[minidx]
 
-If you need to do some computation on each element before taking the max,
-then `$.maximumBy` is appropriate, it will also return the element for which
-`fn` return the max rather than the maximum return. To simply get the
-maximum return value consider collecting up the values first.
+If ordering is not based on a single numeric property, or you want the element
+containing this property, then `$.maximumBy` is appropriate: Pass in a comparison
+function and it will return the element which compares favorably against all
+elements in `xs`.
+
+To simply get the maximum return value of a property,
+consider collecting up the values first then applying the faster `maximum` function.
 
 ````javascript
 $.maximum([1,3,2,5]); // 5
-$.maximumBy($.get('length'), [ [1,3,2], [2], [2,3] ]); // [ 1, 3, 2 ]
+$.maximumBy($.comparing('length'), [ [1,3,2], [2], [2,3] ]); // [ 1, 3, 2 ]
 $.maximum($.collect('length', [ [1,3,2], [2], [2,3] ])); // 3
 ````
 
-### $.sum(xs) :: Number
-### $.product(xs) :: Number
-### $.flatten(xs) :: Array
-Reduces the level of nesting in an array by one.
-
-````javascript
-$.flatten([ [1,3,2], [2,[3],2] , [1] ]); // [ 1, 3, 2, 2, [ 3 ], 2, 1 ]
-````
-
-## Variadic Functions
-These act on several arguments, and can be used with `$.zipWith` for any number
-of lists.
-
-### $.add(x [, y [, ..]])
-### $.multiply(x [, y [, ..]])
-### $.concat(xs [, ys [, ..]])
-
-````javascript
-$.add(1,2,3); // 6
-$.multiply(1,2,3,4,5); // 120
-$.concat([1,2], [3,4], [5,6]); // [ 1, 2, 3, 4, 5, 6 ]
-````
-
-## List Operations
-Dynamic Data.List. Many of these functions (somewhat remarkably) work on strings
-as arrays.
+Collecting first is going to be faster, but this implies loosing the association
+between the original element.
 
 ### $.zip(xs, ys [, zs [, ..]]) :: ls
 zip takes n arrays and returns an array of n length arrays by
@@ -690,14 +611,6 @@ To delete all, `Array.prototype.filter` is best suited:
 $.delete([1,2,2,3,4], 2); // [1,2,3,4]
 ````
 
-
-
----
-
-TODO: $.copy for shallow copy?
-TODO: $.extend?
-TODO: $.clone for deep copy?
-TODO: use xtend?
 
 
 # Tutorials

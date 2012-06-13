@@ -60,7 +60,7 @@ exports['test#curried binary ops'] = function () {
 
 exports["test#higher order looping"] = function () {
   a.equal($.reduce($.plus2, 5)([1,1,1]), 8, "reduce add 5 + 1+1+1 === 8");
-  a.eql($.scan([1,1,1], 5, $.plus2), [5,6,7,8],"scan add 5 [1,1,1] === [5,6,7,8]");
+  a.eql($.scan([1,1,1], $.plus2, 5), [5,6,7,8],"scan add 5 [1,1,1] === [5,6,7,8]");
   a.eql($.iterate(5, 2, $.times(2)), [2,4,8,16,32], "iterate (*2)");
   a.eql($.range(1,5), $.range(5), "range 1 indexed");
   a.eql($.range(5), [1,2,3,4,5], "range inclusive");
@@ -81,12 +81,12 @@ exports["test#lifted functions"] = function () {
   a.equal($.maximum([1,3,2,5,2]), 5, "max [1,3,2,5,2] === 5");
   a.equal($.minimum([1,3,2,5,2]), 1, "min [1,3,2,5,2] === 1");
 
-  var mbRes = $.maximumBy($.get('length'), [ [1,3,2], [2], [2,3] ]);
+  var mbRes = $.maximumBy($.comparing('length'), [ [1,3,2], [2], [2,3] ]);
   a.eql(mbRes, [1,3,2], 'maxBy returns the element for which length is maximal');
   var collectRes = $.maximum($.pluck('length', [ [1,3,2], [2], [2,3] ]));
   a.equal(collectRes, 3, "maximum of collects simply returns the value");
 
-  var mbRes = $.minimumBy($.get('length'), [ [1,3,2], [2], [2,3] ]);
+  var mbRes = $.minimumBy($.comparing('length'), [ [1,3,2], [2], [2,3] ]);
   a.eql(mbRes, [2], 'minBy returns the element for which length is maximal');
   var collectRes = $.minimum($.pluck('length', [ [1,3,2], [2], [2,3] ]));
   a.equal(collectRes, 1, "minymum of collects simply returns the value");

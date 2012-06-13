@@ -1,5 +1,6 @@
 var $ = {}
-  , reduce = Array.prototype.reduce;
+  , reduce = Array.prototype.reduce
+  , concat = Array.prototype.concat;
 
 // multi-parameter versions for the associative operators:
 $.plus2 = function (x, y) {
@@ -42,7 +43,23 @@ $.or4 = function (x, y, z, w) {
   return x || y || z || w;
 };
 
-// Array versions of 3/5 associative operators's reductions
+$.append2 = function (xs, ys) {
+  return xs.concat(ys);
+};
+$.append3 = function (xs, ys, zs) {
+  return xs.concat(ys, zs);
+};
+$.append4 = function (xs, ys, zs, ws) {
+  return xs.concat(ys, zs, ws);
+};
+
+// makes sense to have 3,4 parameter versions of this despite it being associative
+$.prepend2 = function (xs, ys) {
+  return ys.concat(xs);
+};
+
+
+// Array versions of 3/6 associative operators's reductions
 $.sum = function (xs) {
   return xs.reduce($.plus2, 0);
 };
@@ -50,7 +67,7 @@ $.product = function (xs) {
   return xs.reduce($.times2, 1);
 };
 $.flatten = function (xs) {
-  return xs.reduce($.append2, []);
+  return concat.apply([], xs);
 };
 
 // Cheapest general associative reductions without looping over arguments manually
@@ -63,7 +80,7 @@ $.multiply = function () {
   return reduce.call(arguments, $.times2, 1);
 };
 $.concat = function () {
-  return reduce.call(arguments, $.append2, []);
+  return concat.apply([], arguments);
 };
 
 
@@ -82,14 +99,6 @@ $.div2 = function (x, y) {
 
 $.mod2 = function (x, y) {
   return x % y;
-};
-
-$.append2 = function (xs, ys) { // reads as infix
-  return xs.concat(ys);
-};
-
-$.prepend2 = function (xs, ys) { // reads as infix
-  return ys.concat(xs);
 };
 
 $.eq2 = function (x, y) {
