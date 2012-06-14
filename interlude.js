@@ -142,7 +142,6 @@ $.replicate = function (num, el) {
   return result;
 };
 
-// this arguably needs a curried version, waiting for initial
 $.iterate = function (times, init, fn) {
   var result = [init];
   for (var i = 1; i < times; i += 1) {
@@ -150,16 +149,6 @@ $.iterate = function (times, init, fn) {
   }
   return result;
 };
-
-$.find = function (xs, fn) {
-  for (var i = 0; i < xs.length; i += 1) {
-    if (fn(xs[i])) {
-      return xs[i];
-    }
-  }
-  return -1;
-};
-
 
 // scan(fn, z)([x1, x2, ...]) == [z, f(z, x1), f(f(z, x1), x2), ...]
 $.scan = function (xs, fn, initial) {
@@ -344,6 +333,9 @@ $.trace = function (fn, fnName) {
     return result;
   };
 };
+
+$.extend
+
 */
 
 
@@ -385,9 +377,10 @@ $.comparing = function () {
 };
 
 // ---------------------------------------------
-// max/min
+// Data.List
 // ---------------------------------------------
 
+// max/min + generalized
 $.maximum = function (xs) {
   return Math.max.apply(Math, xs);
 };
@@ -396,8 +389,6 @@ $.minimum = function (xs) {
   return Math.min.apply(Math, xs);
 };
 
-// using compare functions:
-// empty array => return undefined
 $.maximumBy = function (cmp, xs) {
   for (var i = 1, max = xs[0], len = xs.length; i < len; i += 1) {
     if (cmp(xs[i], max) > 0) {
@@ -416,9 +407,33 @@ $.minimumBy = function (cmp, xs) {
   return min;
 };
 
-// ---------------------------------------------
-// List operations
-// ---------------------------------------------
+// first/last + generalized
+$.first = function (xs) {
+  return xs[0];
+};
+
+$.last = function (xs) {
+  return xs[xs.length-1];
+};
+
+$.firstBy = function (fn, xs) {
+  for (var i = 0, len = xs.length; i < len; i += 1) {
+    if (fn(xs[i])) {
+      return xs[i];
+    }
+  }
+  return undefined;
+};
+
+$.lastBy = function (fn, xs) {
+  for (var i = xs.length - 1; i >= 0; i -= 1) {
+    if (fn(xs[i])) {
+      return xs[i];
+    }
+  }
+  return undefined;
+};
+
 // the following functions are basically dependency free
 // apart from $.eq2, but really needs $.equality for efficient testing of both
 
@@ -460,8 +475,7 @@ $.zip = function () {
   return results;
 };
 
-// Ordered Array operations
-
+// Modifying Array operations
 $.insertBy = function (cmp, xs, x) {
   for (var i = 0, len = xs.length; i < len; i += 1) {
     if (cmp(xs[i], x) >= 0) {
@@ -487,7 +501,6 @@ $.deleteBy = function (eq, xs, x) {
   return xs;
 };
 
-// behaviourally equivalent to $.deleteBy($.eq2, xs, x)
 $.delete = function (xs, x) {
   var idx = xs.indexOf(x);
   if (idx >= 0) {
@@ -497,13 +510,15 @@ $.delete = function (xs, x) {
 };
 
 // "Set" operations
-
 $.intersectBy = function (eq, xs, ys) {
-  var result = [];
-  if (xs.length && ys.length) {
-    for (var i = 0, iLen = xs.length; i < iLen; i += 1) {
+  var result = []
+    , xLen = xs.length
+    , yLen = ys.length;
+
+  if (xLen && yLen) {
+    for (var i = 0; i < xLen; i += 1) {
       var x = xs[i];
-      for (var j = 0, jLen = ys.length; j < jLen; j += 1) {
+      for (var j = 0; j < yLen; j += 1) {
         if (eq(x, ys[j])) {
           result.push(x);
           break;

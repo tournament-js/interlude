@@ -265,6 +265,10 @@ $.range(0, 6, 2); // [ 0, 2, 4, 6 ]
 ### $.replicate(n, x)
 Returns an `n` length Array with the element `x` at every position.
 
+````javascript
+$.replicate(5, 2); // [ 2, 2, 2, 2, 2 ]
+````
+
 ### $.iterate(len, x, fn) :: results
 Returns a size `len` array of repeated applications of `fn` to `x`:
 
@@ -294,15 +298,6 @@ so 3rd and 4th arguments will always be undefined inside `fn`.
 [1,1,1,1].reduce($.plus2, 0); // 4
 $.scan([1,1,1,1], $.plus2, 0); // [ 0, 1, 2, 3, 4 ]
 ````
-
-### $.find(fn, xs) :: x
-TODO: technically firstBy
-Finds the first element `x` in `xs` for which `fn(x)` is true.
-TODO: $.copy for shallow copy?
-TODO: $.extend?
-TODO: $.clone for deep copy?
-TODO: use xtend?
-
 
 
 ## Curried Prototype Method Accessors
@@ -379,9 +374,27 @@ or `$.neq(/*undefined*/)` to be explicit about the inequality test.
 [{a:5}, {}].map($.get('a')).filter($.neq()); // [ 5 ]
 ````
 
-## List Operations
-Dynamic Data.List. Many of these functions (somewhat remarkably) work on strings
-as arrays.
+## Array
+Many of these functions (somewhat remarkably) work on strings.
+
+### $.first(xs) :: x
+Finds the first element of `xs`.
+
+### $.last(xs) :: x
+Finds the last element of `xs`.
+
+### $.firstBy(fn, xs) :: x
+Finds the first element `x` in `xs` for which `fn(x)` is true.
+
+### $.lastBy(fn, xs) :: x
+Finds the last element `x` in `xs` for which `fn(x)` is true.
+
+````javascript
+var ary = [{a:2}, {a:2, b:1}, {a:3}];
+var aEq2 = $.seq2($.get('a'), $.eq(2));
+$.firstBy(ary, aEq2); // {a:2}
+$.lastBy(ary, aEq2); // {a:2, b:1}
+````
 
 ### $.maximum(xs) :: Number
 ### $.minimum(xs) :: Number
@@ -395,15 +408,21 @@ elements in `xs`.
 
 To simply get the maximum return value of a property,
 consider collecting up the values first then applying the faster `maximum` function.
+Collecting first is going to be faster, but this implies loosing the association
+between the original element.
 
 ````javascript
 $.maximum([1,3,2,5]); // 5
-$.maximumBy($.comparing('length'), [ [1,3,2], [2], [2,3] ]); // [ 1, 3, 2 ]
-$.maximum($.collect('length', [ [1,3,2], [2], [2,3] ])); // 3
+
+var nested = [[1,3,2], [2], [2,3]];
+$.maximum($.collect('length', nested)); // 3
+$.maximumBy($.comparing('length'), nested); // [ 1, 3, 2 ]
 ````
 
-Collecting first is going to be faster, but this implies loosing the association
-between the original element.
+Note that unlike `$.maximum` which returns `-Infinity` in the case of an empty
+Array, `$.maximumBy` returns `undefined` as this is the only thing possible
+without knowing the structure of the elements in the array.
+Similarly for `$.minimum` and `$.minimumBy`.
 
 ### $.zip(xs, ys [, zs [, ..]]) :: ls
 zip takes n arrays and returns an array of n length arrays by
@@ -426,7 +445,7 @@ the array of corresponding sums.
 
 ````javascript
 $.zipWith($.multiply, [2,2,2], [1,0,1], [1,2,3]); // [ 2, 0, 6 ]
-$.zipWith($.plus2, [1,1,1], $.range(5)); // [2, 3, 4]
+$.zipWith($.plus2, [1,1,1], $.range(5)); // [ 2, 3, 4 ]
 ````
 
 zipWith can also be used for fusing two lists:
@@ -449,13 +468,13 @@ The 'intersect' function takes the intersection of two arrays.
 For example,
 
 ````javascript
-$.intersect([1,2,3,4], [2,4,6,8]); // [2,4]
+$.intersect([1,2,3,4], [2,4,6,8]); // [ 2, 4 ]
 ````
 
 If the first array contains duplicates, so will the result.
 
 ````javascript
-$.intersect([1,2,2,3,4], [6,4,4,2]); // [2,2,4]
+$.intersect([1,2,2,3,4], [6,4,4,2]); //  [ 2, 2, 4 ]
 ````
 
 It is a special case of 'intersectBy', which allows the programmer to
@@ -473,21 +492,34 @@ $.intersectBy($.equality('a'), [{a:1}, {a:4, b:0}], [{a:2}, {a:4, b:1}]);
 The nub function removes duplicate elements from an array.
 In particular, it keeps only the first occurrence of each element.
 (The name nub means _essence_.) Behaviourally equivalent to the generalized
-version `nubBy` with `$.eq2` as the supplied equality test, but
-this special case implementation uses `Array.prototype.indexOf` and is faster.
+version `nubBy` (which allows the programmer to supply their own equality test)
+with `$.eq2` as the supplied equality test, but `nub` exploits the performance
+of `Array.prototype.indexOf` to speed up this special case.
+
+````javascript
+$.nub([1,3,2,4,1,2]); // [ 1, 3, 2, 4 ]
+````
 
 ### $.nubBy(fn, xs) :: ys
 The generalized version of `nub`.
 
-### $.group(xs) :: ys
-The group function takes an array and returns an array of arrays such that
-the flattened result is equal to the argument.
-Moreover, each subarray in the result contains only equal elements. For example,
-
 ````javascript
-$.group([1,2,2,3,5,5,7]); // [ [1], [2,2], [3], [5,5], [7] ]
+var notCoprime = $.seq2($.gcd, $.gt(1));
+var primes = $.nubBy(notCoprime, $.range(2, 11)); // [ 2, 3, 5, 7, 11 ]
 ````
 
+### $.group(xs) :: ys
+The group function takes an array and returns an array of arrays such that
+the flattened result is equal to `xs`.
+Moreover, each subarray is constructed by grouping the _consecutive_ equal elements
+in `xs`. For example,
+
+````javascript
+$.group([1,2,2,3,5,5,2]); // [ [1], [2,2], [3], [5,5], [2] ]
+````
+
+In particular, if `xs` is sorted, then the result is sorted
+when comparing on the first sub element, i.e. `$.comparing(0)`.
 It is a special case of groupBy, which allows the programmer to supply
 their own equality test.
 
@@ -495,17 +527,17 @@ their own equality test.
 The non-overloaded version of `group`.
 
 ````javascript
-$.groupBy($.equality('a'), [{a:1}, {a:4, b:1}, {a:4, b:0}, {a:2}]);
+$.groupBy($.equality('a'), [{a:1}, {a:4, b:1}, {a:4, b:0}, {a:1}]);
 // [ [ { a: 1 } ],
 //   [ { a: 4, b: 1 }, { a: 4, b: 0 } ],
-//   [ { a: 2 } ] ]
+//   [ { a: 1 } ] ]
 ````
 
 ### $.union(xs, ys) :: zs
 The union function returns the array union of the two arrays.
 
 ````javascript
-$.union([1,3,5], [4,5,6]); // [ 1, 3, 5, 4, 6]
+$.union([1,3,5], [4,5,6]); // [ 1, 3, 5, 4, 6 ]
 ````
 
 Duplicates, and elements of the first array, are removed from the the second array,
@@ -608,36 +640,5 @@ To delete all, `Array.prototype.filter` is best suited:
 $.delete([1,2,2,3,4], 2); // [1,2,3,4]
 ````
 
-
-
-# Tutorials
-TODO: move to new .md
-## Writing Efficient Functional Code
-JavaScript is not lazy, so writing code in a purely lazy style is not beneficial.
-First see an example where we start out thinking about it purely functionally:
-
-### Sum of all odd squares less than 10000
-First thought implementation:
-
-````javascript
-$.sum($.range(1, 10000).map($.pow(2)).filter($.odd).filter($.lt(10000)));
-// 166650
-````
-
-But noticing that odd square are odd if and only if the original number was odd
-we can skip squaring and filtering out half the list.
-
-````javascript
-$.sum($.range(1, 10000, 2).map($.pow(2)).filter($.lt(10000)));
-// 166650
-````
-
-Finally, we notice that a square is less than 10000 if and only the original
-number was less than the sqrt(10000) = 100.
-
-````javascript
-$.sum($.range(1, 100, 2).map($.pow(2)));
-// 166650
-````
-
-This final code is more efficient, but needs more explanation of what it does.
+## Functional Extras
+To come. Needs some more thought.
