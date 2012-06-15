@@ -63,16 +63,9 @@ $.notElem = function (xs) {
   };
 };
 
-$.partition = function (xs, fn) {
-  return [xs.filter(fn), xs.filter($.not(fn))];
-};
-
 // ---------------------------------------------
 // Math
 // ---------------------------------------------
-
-// can easily $.lift gcd/lcm
-// but they're hard to name sensibly different, and too peripheral for this library
 
 $.gcd = function (a, b) {
   a = Math.abs(a);
@@ -89,19 +82,6 @@ $.lcm = function (a, b) {
   return (!a || !b) ? 0 : Math.abs((a * b) / $.gcd(a, b));
 };
 
-$.pow = function (exponent) {
-  return function (x) {
-    return Math.pow(x, exponent);
-  };
-};
-
-// ultimately only as accurate as the internal Math.log approximation
-$.logBase = function (base) {
-  return function (x) {
-    return Math.log(x) / Math.log(base);
-  };
-};
-
 $.even = function (n) {
   return n % 2 === 0;
 };
@@ -109,6 +89,21 @@ $.even = function (n) {
 $.odd = function (n) {
   return n % 2 === 1;
 };
+
+// two curried versions
+$.pow = function (exponent) {
+  return function (x) {
+    return Math.pow(x, exponent);
+  };
+};
+
+$.logBase = function (base) {
+  return function (x) {
+    return Math.log(x) / Math.log(base);
+  };
+};
+
+$.log2 = $.logBase(2);
 
 // ---------------------------------------------
 // Higher order looping

@@ -44,6 +44,11 @@ Sometimes useful for composing certain functions.
 
 ````javascript
 [8,3,4,5,6].filter($.not($.gt(5))); // [3, 4, 5]
+
+var partition = function (p, xs) {
+  return [xs.filter(p), xs.filter($.not(p))]
+};
+partition($.gt(5), [8,3,4,5,6]); // [ [ 8, 6 ], [ 3, 4, 5 ] ]
 ````
 
 ### $.all(fn) -> (xs -> Boolean)
@@ -76,13 +81,6 @@ but with the array curried.
 [1,2,3,4,3].filter($.notElem([1,3])); // [ 2, 4 ]
 ````
 
-### $.partition(xs, fn) :: [ys, zs]
-The `partition` function takes a predicate, an array and returns
-a 2-length array of arrays of elements which do and do not satisfy the
-predicate, respectively; i.e.,
-
-`$.partition(p, xs) equals [xs.filter(p), xs.filter($.not(p))]`
-
 ## Math
 All Math functions operate purely on Number instances, and gcd & lcm
 in particular are only well-defined for integers.
@@ -104,24 +102,6 @@ $.lcm(3, 5); // 15
 $.lcm(10, 15); // 30
 ````
 
-### $.pow(exp) :: (x -> Number)
-An accessor for Math.pow, but with exponent curried.
-
-````javascript
-$.pow(3)(2); // 8
-$.pow(1/3)(8); // 2
-[1,2,3,4].map($.pow(2)); // [1, 4, 9, 16]
-````
-
-### $.logBase(base) :: (x -> Number)
-Returns a function which returns log base b of input.
-`$.logBase(Math.E)` is functionally equivalent to `Math.log`.
-
-````javascript
-$.logBase(2)(8); // 3
-[16,8,4,2].map($.logBase(2)); // [4, 3, 2, 1]
-````
-
 ### $.even(n), $.odd(n) :: Boolean
 Returns whether or not the number is even or odd, respectively.
 
@@ -130,6 +110,29 @@ $.even(5); // false
 $.odd(5); // true
 [1,2,3,4,5,6].filter($.even); // [ 2, 4, 6 ]
 ````
+
+### $.pow(exp) :: (x -> Number)
+An accessor for `Math.pow`, but with exponent curried.
+
+````javascript
+[1,2,3,4].map($.pow(2)); // [ 1, 4, 9, 16 ]
+````
+
+### $.logBase(base) :: (x -> Number)
+An accessor for `Math.log`, but currying the base converted to
+(dividing with `Math.log(base)`). `$.logBase(Math.E)` is equivalent to `Math.log`.
+
+````javascript
+[16,8,4,2].map($.logBase(2)); // [ 4, 3, 2, 1 ]
+````
+
+### $.log2 :: (x -> Number)
+Shortcut for `$.logBase(2)`.
+
+#### Note: logBase and pow
+These are only really useful when you need a function curried for the element.
+If you have a single element, doing an extra function call, i.e.
+`$.pow(2)(3)` vs. `Math.pow(3, 2)` is an unnecessary overhead.
 
 ## Functional Composition
 Functional composition is done in sequential (rather than algebraic) order
@@ -312,6 +315,7 @@ An accessor for `Array.prototype.filter`, but with the function curried.
 An accessor for `Array.prototype.reduce`, but with the function curried.
 
 ````javascript
+// alternative implementations of $.product and $.flatten :
 var product = $.reduce($.times2, 1);
 var flatten = $.reduce($.append2, []);
 ````
@@ -642,3 +646,15 @@ $.delete([1,2,2,3,4], 2); // [1,2,3,4]
 
 ## Functional Extras
 To come. Needs some more thought.
+
+## TODO:
+how to split everything:
+
+- operators
+- comparison (generalized ord/eq) split further?
+- data.list (zip +set ops+max ops + first/last + curried stuff)
+- accessors in base?
+- curried math
+- general
+
+partition is an odd one out..  maybe keep it as an example
