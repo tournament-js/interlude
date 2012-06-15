@@ -10,10 +10,6 @@ exports['test#common'] = function () {
   a.ok($.not(false), "!false");
   a.eql($.range(5).filter($.elem($.range(4))), $.range(4), "range/elem filter");
   a.eql($.range(5).filter($.notElem($.range(4))), [5], "range/elem filter");
-
-  //var res = $.partition($.equality(0)([2]), [[1], [2], [3], [2]]);
-  //a.eql(res, [ [[2],[2]] , [[1],[3]] ], "partition using $.equality");
-  a.eql($.partition([1,3,2,1,2], $.eq(2)), [[2,2], [1,3,1]], "partition basic");
 };
 
 exports['test#math'] = function () {
