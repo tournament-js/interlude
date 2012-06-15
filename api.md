@@ -129,11 +129,6 @@ An accessor for `Math.log`, but currying the base converted to
 ### $.log2 :: (x -> Number)
 Shortcut for `$.logBase(2)`.
 
-#### Note: logBase and pow
-These are only really useful when you need a function curried for the element.
-If you have a single element, doing an extra function call, i.e.
-`$.pow(2)(3)` vs. `Math.pow(3, 2)` is an unnecessary overhead.
-
 ## Functional Composition
 Functional composition is done in sequential (rather than algebraic) order
 in interlude. The reasoning for this is there is no real benefit of listing
@@ -162,92 +157,56 @@ The speed of composing functions is in general not significant, but avoiding
 the variadic slice penalty can speed up such code
 [slightly](http://jsperf.com/crazyfunctional8).
 
-## Generalized Equality
-### $.equality(props..) :: (x, y -> x 'equality on props' y)
-This is a special function that creates an equality testing function based on
-properties to test on. It will return true if and only if all the properties listed
-are the same for both x and y.
+## Property Accessors
+These are shortcut functions for extracting a property of an element.
+Since this is easier natuarlly to do for one element by using the dot operator,
+the use of these functions are primarily for mass extraction via
+`Array.prototype.map`.
+
+### $.get(prop) :: (el -> el[prop])
+Allows simple property extraction on an element:
 
 ````javascript
-var lenEquals = $.equality('length');
-lenEquals([1,3,5], [2,4,6]); // true
-lenEquals([1,3,5], [2,4]); // false
-
-var steve = {name: 'Steve', money: 30000, status: "Awesome"};
-var peter = {name: 'Peter', money: 30000, status: "Depressed"};
-var equallyCool = $.equality('money', 'status');
-equallyCool(steve, peter); // false
+var objs = [{id: 1, s: "h"}, {id: 2, s: "e"}, {id: 3, s: "y"}];
+objs.map($.get('id')); // [ 1, 2, 3 ]
+objs.map($.get('s')).join(''); // 'hey'
 ````
 
-This can be very powerful combined with the generalized list functions further on!
-
-## Generalized Comparison
-These functions help generate
-[compare functions](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/sort)
-for `Array.prototype.sort`.
-
-### $.compare([ord]) :: (x, y -> x `compare` y)
-This creates a function which returns the numeric difference between x and y,
-optionally multiplying by minus one if the ord parameter is set to '-' for
-descending order. The default ord parameter '+' for ascending order may be omitted.
-
-When passed to `Array.prototype.sort`, it will sort the array _numerically_
-as opposed to the default ECMA behaviour of turning the elements into strings then
-sorting them _lexicographically_. This helps avoid common sorting mistakes:
+### $.getDeep(props) :: (el -> el[p1][..][pN])
+Allows property extraction from more than one level down, via a `.` delimited
+string of property names:
 
 ````javascript
-[1,4,3,2].sort(); // [1,2,3,4] (expected)
-[2, 100, 10, 4].sort(); // [10, 100, 2, 4] (wtf!)
-
-[1,4,3,2].sort($.compare('+')); // [1,2,3,4] (expected)
-[2, 100, 10, 4].sort($.compare('+')); // [2, 4, 10, 100] (expected..)
+var objs = [
+  {id: 1, s: "h", obj: {ary: [1,2]} }
+, {id: 2, s: "e", obj: {ary: [3,4]} }
+, {id: 3, s: "y", obj: {ary: [5,6]} }
+];
+objs.map($.get('obj.ary.1')); // [ 2, 4, 6 ]
 ````
 
-### $.comparing(prop [, ord [, ..]]) :: (x, y -> x 'compare props' y)
-This creates a numeric compare function returning the numeric difference between
-any (or: the) included property which is not zero.
-If all properties are identical, it returns zero.
+### $.pluck(prop, xs) :: ys
+Shorthand for of a common use-case for `Array.prototype.map`:
+extracting simple (not deeply nested) property values.
 
-Pass in the name(s) of a (numeric!) property the
-elements to be sorted all have, along with the direction of comparison for each
-property: '+' for ascending (default), '-' for descending.
-The default last ord parameter can be omitted, but it is recommended included,
-as the arguments go pairwise: prop1, ord1, prop2, ord2, ...
+Behaviourally equivalent to `xs.map($.get(prop))`, but skipping the
+extra function call per element.
 
 ````javascript
-[[1,3], [2,2],[3,4]].sort($.comparing(1)); // [ [2,2], [1,3], [3,4] ]
-
-var money = [{id: 1, money: 3}, {id: 2, money: 0}, {id: 3, money: 3}];
-// sort by money asc. first, then id desc.
-money.sort($.comparing('money', '+', 'id', '-'));
-// [ { id: 2, money: 0 }, { id: 3, money: 3 }, { id: 1, money: 3 } ]
+$.collect('length', [ [1,3,2],  [2], [1,2] ]); // [ 3, 1, 2 ]
 ````
 
-### Custom Comparators
-While `comparing`, `compare`, and `equality` are great at creating comparison
-functions and equality testers, it might still be useful to create curried
-functions that compare/filter based on such properties.
-Fortunately, this is quite easy to do with the tools available.
+#### Accessors Note
+If a property is undefined on an element (or something is, in the middle
+of a deep property search), undefined is returned (as if you had written the lambda
+yourself).
+To only get the defined values from a map of this style; filter by `$.neq()` -
+or `$.neq(/*undefined*/)` to be explicit about the inequality test.
 
 ````javascript
-// Check length >0
-var notEmpty = $.seq2($.get('length'), $.gt(0));
-[ [1], [], [2,4] ].filter(notEmpty); // [ [1], [2,4] ]
-
-// Check absolute value <=1 on all elements
-var withinUnitSquare = $.all($.seq2(Math.abs, $.lte(1)));
-[ [1,-1], [1,-2], [1,1,1] ].filter(withinUnitSquare); // [ [1,-1], [1,1,1] ]
-
-// Check euclidean distance of point <=1
-var withinUnitCircle = $.seq4($.map($.pow(2)), $.sum, Math.sqrt, $.lte(1));
-[ [1,-1], [0,0], [1], [1.1], [0,0.5,0.5], [0,0,0,1] ].filter(withinUnitCircle);
-// [ [0,0], [1], [0,0.5,0.5], [0,0,0,1] ]
+[{a:5}, {}].map($.get('a')); // [ 5, undefined ]
+[{a:5}, {}].map($.get('a')).filter($.neq()); // [ 5 ]
 ````
-
-While these examples are contrieved and the efficiency of these
-functions could be improved by knowing the dimension of the space
-being worked on (typical case) to help inlining a smaller specific function,
-it shows that very flexible higher order functions can be expressed very simply.
 
 ##  Looping Constructs
 These tools allow loop like code to be written in a more declarative style.
@@ -327,56 +286,94 @@ An accessor for any method on the prototype of the type of `x`.
 [[1,2], [3,4]].map($.invoke('join','w')); // [ '1w2', '3w4']
 ````
 
-## Property Accessors
-These are shortcut functions for extracting a property of an element.
-Since this is easier natuarlly to do for one element by using the dot operator,
-the use of these functions are primarily for mass extraction via
-`Array.prototype.map`.
-
-### $.get(prop) :: (el -> el[prop])
-Allows simple property extraction on an element:
+## Generalized Equality
+### $.equality(props..) :: (x, y -> x 'equality on props' y)
+This is a special function that creates an equality testing function based on
+properties to test on. It will return true if and only if all the properties listed
+are the same for both x and y.
 
 ````javascript
-var objs = [{id: 1, s: "h"}, {id: 2, s: "e"}, {id: 3, s: "y"}];
-objs.map($.get('id')); // [ 1, 2, 3 ]
-objs.map($.get('s')).join(''); // 'hey'
+var lenEquals = $.equality('length');
+lenEquals([1,3,5], [2,4,6]); // true
+lenEquals([1,3,5], [2,4]); // false
+
+var steve = {name: 'Steve', money: 30000, status: "Awesome"};
+var peter = {name: 'Peter', money: 30000, status: "Depressed"};
+var equallyCool = $.equality('money', 'status');
+equallyCool(steve, peter); // false
 ````
 
-### $.getDeep(props) :: (el -> el[p1][..][pN])
-Allows property extraction from more than one level down, via a `.` delimited
-string of property names:
+This can be very powerful combined with the generalized list functions further on!
+
+
+## Generalized Comparison
+These functions help generate
+[compare functions](https://developer.mozilla.org/en/JavaScript/Reference/Global_Objects/Array/sort)
+for `Array.prototype.sort`.
+
+### $.compare([ord]) :: (x, y -> x `compare` y)
+This creates a function which returns the numeric difference between x and y,
+optionally multiplying by minus one if the ord parameter is set to `-1` for
+descending order. The default ord parameter `+1` for ascending order may be omitted.
+
+When passed to `Array.prototype.sort`, it will sort the array _numerically_
+as opposed to the default ECMA behaviour of turning the elements into strings then
+sorting them _lexicographically_. This helps avoid common sorting mistakes:
 
 ````javascript
-var objs = [
-  {id: 1, s: "h", obj: {ary: [1,2]} }
-, {id: 2, s: "e", obj: {ary: [3,4]} }
-, {id: 3, s: "y", obj: {ary: [5,6]} }
-];
-objs.map($.get('obj.ary.1')); // [ 2, 4, 6 ]
+[1,4,3,2].sort(); // [1,2,3,4] (expected)
+[2, 100, 10, 4].sort(); // [10, 100, 2, 4] (wtf!)
+
+[1,4,3,2].sort($.compare()); // [1,2,3,4] (expected)
+[2, 100, 10, 4].sort($.compare()); // [2, 4, 10, 100] (expected..)
 ````
 
-### $.pluck(prop, xs) :: ys
-Shorthand for of a common use-case for `Array.prototype.map`:
-extracting simple (not deeply nested) property values.
+### $.comparing(prop [, ord [, ..]]) :: (x, y -> x 'compare props' y)
+This creates a numeric compare function returning the numeric difference between
+any (or: the) included property which is not zero.
+If all properties are identical, it returns zero.
 
-Behaviourally equivalent to `xs.map($.get(prop))`, but skipping the
-extra function call per element.
+Pass in the name(s) of a (numeric) property the
+elements to be sorted all have, along with the direction of comparison for each
+property: `+1` for ascending (default), `-1` for descending.
+The default last ord parameter can be omitted, but it is recommended included,
+as the arguments go pairwise: prop1, ord1, prop2, ord2, ...
 
 ````javascript
-$.collect('length', [ [1,3,2],  [2], [1,2] ]); // [ 3, 1, 2 ]
+[[1,3], [2,2],[3,4]].sort($.comparing(1)); // [ [2,2], [1,3], [3,4] ]
+
+var money = [{id: 1, money: 3}, {id: 2, money: 0}, {id: 3, money: 3}];
+// sort by money asc. first, then id desc.
+money.sort($.comparing('money', +1, 'id', -1));
+// [ { id: 2, money: 0 }, { id: 3, money: 3 }, { id: 1, money: 3 } ]
 ````
 
-#### Accessors Note
-If a property is undefined on an element (or something is, in the middle
-of a deep property search), undefined is returned (as if you had written the lambda
-yourself).
-To only get the defined values from a map of this style; filter by `$.neq()` -
-or `$.neq(/*undefined*/)` to be explicit about the inequality test.
+### Custom Comparators
+While `comparing`, `compare`, and `equality` are great at creating comparison
+functions and equality testers, it might still be useful to create curried
+functions that compare/filter based on such properties.
+Fortunately, this is quite easy to do with the tools available.
 
 ````javascript
-[{a:5}, {}].map($.get('a')); // [ 5, undefined ]
-[{a:5}, {}].map($.get('a')).filter($.neq()); // [ 5 ]
+// Check length >0
+var notEmpty = $.seq2($.get('length'), $.gt(0));
+[ [1], [], [2,4] ].filter(notEmpty); // [ [1], [2,4] ]
+
+// Check absolute value <=1 on all elements
+var withinUnitSquare = $.all($.seq2(Math.abs, $.lte(1)));
+[ [1,-1], [1,-2], [1,1,1] ].filter(withinUnitSquare); // [ [1,-1], [1,1,1] ]
+
+// Check euclidean distance of point <=1
+var withinUnitCircle = $.seq4($.map($.pow(2)), $.sum, Math.sqrt, $.lte(1));
+[ [1,-1], [0,0], [1], [1.1], [0,0.5,0.5], [0,0,0,1] ].filter(withinUnitCircle);
+// [ [0,0], [1], [0,0.5,0.5], [0,0,0,1] ]
 ````
+
+While these examples are contrieved and the efficiency of these
+functions could be improved by knowing the dimension of the space
+being worked on (typical case) to help inlining a smaller specific function,
+it shows that very flexible higher order functions can be expressed very simply.
+
 
 ## Array
 Many of these functions (somewhat remarkably) work on strings.
@@ -653,10 +650,7 @@ To come. Needs some more thought.
 how to split everything:
 
 - operators
-- comparison (generalized ord/eq) split further?
-- data.list (zip +set ops+max ops + first/last + curried stuff)
-- accessors in base?
-- curried math
-- general
+- zip + set + max + first/last + comparison/equality
+- common + math + accessors + looping (curried stuff)
+- wrappers + seq
 
-partition is an odd one out..  maybe keep it as an example

@@ -5,6 +5,9 @@
   * improve DOCS browsability and just api in general
   DONE:
   * use latest operators, 0.3 missed some extras
+  * trace/traceBy/wrap/once/memoize
+  * comparing/compare direction parameter is now the factor +1/-1 with +1 omittable
+
 
 0.3.0 / 2012-06-15
 ==================

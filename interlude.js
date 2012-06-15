@@ -106,6 +106,40 @@ $.logBase = function (base) {
 $.log2 = $.logBase(2);
 
 // ---------------------------------------------
+// Property accessors
+// ---------------------------------------------
+
+$.get = function (prop) {
+  return function (el) {
+    return el[prop];
+  };
+};
+
+$.getDeep = function (str) {
+  var props = str.split('.')
+    , len = props.length;
+  return function (el) {
+    var pos = el;
+    for (var i = 0; i < len; i += 1) {
+      pos = pos[props[i]];
+      if (pos === undefined) {
+        return;
+      }
+    }
+    return pos;
+  };
+};
+
+// property accessor map -- equivalent to _.pluck or xs.map($.get('prop'))
+$.pluck = function (prop, xs) {
+  var result = [];
+  for (var i = 0, len = xs.length; i < len; i += 1) {
+    result[i] = xs[i][prop];
+  }
+  return result;
+};
+
+// ---------------------------------------------
 // Higher order looping
 // ---------------------------------------------
 
@@ -113,18 +147,15 @@ $.log2 = $.logBase(2);
 // like _.range or python's range, but 1-indexed inclusive
 $.range = function (start, stop, step) {
   if (arguments.length <= 1) {
-    stop = start || 1;
+    stop = start;
     start = 1;
   }
   step = arguments[2] || 1;
-
   var len = Math.max(Math.ceil((stop - start + 1) / step), 0)
-    , idx = 0
     , range = new Array(len);
 
-  while (idx < len) {
-    range[idx++] = start;
-    start += step;
+  for (var i = 0; i < len; i += 1, start += step) {
+    range[i] = start;
   }
   return range;
 };
@@ -184,157 +215,6 @@ $.invoke = function (method) {
 };
 
 // ---------------------------------------------
-// Functional Sequencing (Composition)
-// ---------------------------------------------
-
-// $.seq(f1, f2, f3..., fn)(args...) == fn(...(f3(f2(f1(args...)))))
-// performance: http://jsperf.com/seqperformance
-$.seq = function () {
-  var fns = arguments;
-  return function () {
-    // only need to apply the first with initial args
-    var res = fns[0].apply(this, arguments);
-    for (var i = 1, len = fns.length; i < len; i += 1) {
-      res = fns[i](res); // rest chain in result from previous
-    }
-    return res;
-  };
-};
-
-// more efficient functional sequencers
-$.seq2 = function (f, g) {
-  return function (x, y, z, w) {
-    return g(f(x, y, z, w));
-  };
-};
-
-$.seq3 = function (f, g, h) {
-  return function (x, y, z, w) {
-    return h(g(f(x, y, z, w)));
-  };
-};
-
-$.seq4 = function (f, g, h, k) {
-  return function (x, y, z, w) {
-    return k(h(g(f(x, y, z, w))));
-  };
-};
-
-// ---------------------------------------------
-// Property accessors
-// ---------------------------------------------
-
-$.get = function (prop) {
-  return function (el) {
-    return el[prop];
-  };
-};
-
-$.getDeep = function (str) {
-  var props = str.split('.')
-    , len = props.length;
-  return function (el) {
-    var pos = el;
-    for (var i = 0; i < len; i += 1) {
-      pos = pos[props[i]];
-      if (pos === undefined) {
-        return;
-      }
-    }
-    return pos;
-  };
-};
-
-// property accessor map -- equivalent to _.pluck or xs.map($.get('prop'))
-$.pluck = function (prop, xs) {
-  var result = [];
-  for (var i = 0, len = xs.length; i < len; i += 1) {
-    result[i] = xs[i][prop];
-  }
-  return result;
-};
-
-// ---------------------------------------------
-// Function Wrappers
-// ---------------------------------------------
-
-//TODO: throttle, debounce, once
-//TODO: clone, extend
-
-/*
-// Memoize an expensive function by storing its results in a proper hash.
-$.memoize = function (fn, hasher) {
-  var memo = Object.create(null);
-  hasher || (hasher = $.id);
-  return function () {
-    var key = hasher.apply(this, arguments);
-    memo[key] || (memo[key] = fn.apply(this.arguments));
-    return memo[key];
-  };
-};
-
-$.curry = function (fn) {
-  var curried = slice.call(arguments, 1);
-  return function () {
-    var args = curried.concat(slice.call(arguments, 0));
-    return fn.apply(this, args);
-  };
-};
-
-// like curry, but curries the last arguments, and creates a function expecting the first
-$.rcurry = function (fn) {
-  var curried = slice.call(arguments, 1);
-  return function () {
-    var args = slice.call(arguments, 0).concat(curried);
-    return fn.apply(this, args);
-  };
-};
-
-
-// guard a function by a condition function
-// returns a function that will only apply f(x) if cond(x) is true
-$.guard = function (fn, cond) {
-  return function (x) {
-    return (cond(x)) ? fn(x) : null;
-  };
-};
-
-// var guardedFibonacci = $.guard(fibonacci, lt(100));
-
-// $.either null guard a function, else return errorFn result
-// if errorFn is a logger, then curry it with the required message
-$.either = function (guardedFn, errorFn) {
-  return function (x) {
-    var result = guardedFn(x);
-    return (result === null) ? errorFn() : result;
-  };
-};
-
-// var errorMsg;
-// var cpuSafeFibonacci = $.either(guardedFibonacci, $.constant(errorMsg));
-// or
-// var cpuSafeFibonaci = $.either(guardedFibonacci, $.curry(console.log, errorMsg))
-
-
-// debug function, wrap it in a function reporting its scope and arguments
-// particularly useful when combined with $.iterate
-$.trace = function (fn, fnName) {
-  var log = (console) ? console.log : $.noop
-    , name = fn.name || fnName || "fn";
-
-  return function () {
-    var result = fn.apply(this, arguments);
-    log('[', name + '(', slice.call(arguments, 0).join(', '), ') -> ', result, ']');
-    return result;
-  };
-};
-
-$.extend
-
-*/
-
-
-// ---------------------------------------------
 // Comparison
 // ---------------------------------------------
 
@@ -350,8 +230,8 @@ $.equality = function () {
   };
 };
 
-$.compare = function (dir) {
-  var factor = parseInt((dir || '+') + 1); // => 1 by default
+$.compare = function (factor) {
+  factor = factor || 1;
   return function (x, y) {
     return factor * (x - y);
   };
@@ -359,10 +239,10 @@ $.compare = function (dir) {
 
 // result of this can be passed directly to Array::sort
 $.comparing = function () {
-  var args = slice.call(arguments, 0);
+  var args = arguments;
   return function (x, y) {
     for (var i = 0, len = args.length; i < len; i += 2) {
-      var factor = parseInt((args[i + 1] || '+') + 1); // => 1 by default
+      var factor = args[i + 1] || 1;
       if (x[args[i]] !== y[args[i]]) {
         return factor * (x[args[i]] - y[args[i]]);
       }
@@ -374,6 +254,12 @@ $.comparing = function () {
 // ---------------------------------------------
 // Data.List
 // ---------------------------------------------
+
+// only internal dependency from interlude
+var eq2 = function (x, y) {
+  return x === y;
+};
+
 
 // max/min + generalized
 $.maximum = function (xs) {
@@ -408,7 +294,7 @@ $.first = function (xs) {
 };
 
 $.last = function (xs) {
-  return xs[xs.length-1];
+  return xs[xs.length - 1];
 };
 
 $.firstBy = function (fn, xs) {
@@ -428,9 +314,6 @@ $.lastBy = function (fn, xs) {
   }
   return undefined;
 };
-
-// the following functions are basically dependency free
-// apart from $.eq2, but really needs $.equality for efficient testing of both
 
 // can act as zipWith, zipWith3, zipWith4...
 // zipper function must have the same number of arguments as there are lists
@@ -525,7 +408,7 @@ $.intersectBy = function (eq, xs, ys) {
 };
 
 $.intersect = function (xs, ys) {
-  return $.intersectBy($.eq2, xs, ys);
+  return $.intersectBy(eq2, xs, ys);
 };
 
 // nubBy builds up a list of unique (w.r.t. provided equality function) similarly to nub
@@ -576,7 +459,7 @@ $.groupBy = function (eq, xs) {
 };
 
 $.group = function (xs) {
-  return $.groupBy($.eq2, xs);
+  return $.groupBy(eq2, xs);
 };
 
 $.unionBy = function (eq, xs, ys) {
@@ -600,6 +483,137 @@ $.differenceBy = function (eq, xs, ys) {
 $.difference = function (xs, ys) {
   return ys.reduce($.delete, xs.slice());
 };
+
+
+
+// ---------------------------------------------
+// Functional Sequencing (Composition)
+// ---------------------------------------------
+
+// $.seq(f1, f2, f3..., fn)(args...) == fn(...(f3(f2(f1(args...)))))
+// performance: http://jsperf.com/seqperformance
+$.seq = function () {
+  var fns = arguments;
+  return function () {
+    // only need to apply the first with initial args
+    var res = fns[0].apply(this, arguments);
+    for (var i = 1, len = fns.length; i < len; i += 1) {
+      res = fns[i](res); // rest chain in result from previous
+    }
+    return res;
+  };
+};
+
+// more efficient functional sequencers
+$.seq2 = function (f, g) {
+  return function (x, y, z, w) {
+    return g(f(x, y, z, w));
+  };
+};
+
+$.seq3 = function (f, g, h) {
+  return function (x, y, z, w) {
+    return h(g(f(x, y, z, w)));
+  };
+};
+
+$.seq4 = function (f, g, h, k) {
+  return function (x, y, z, w) {
+    return k(h(g(f(x, y, z, w))));
+  };
+};
+
+// ---------------------------------------------
+// Function Wrappers
+// ---------------------------------------------
+
+// Memoize an expensive function by storing its results in a proper hash.
+$.memoize = function (fn, hasher) {
+  var memo = Object.create(null);
+  hasher = hasher || $.id;
+  return function () {
+    var key = hasher.apply(this, arguments);
+    if (!memo[key]) {
+      memo[key] = fn.apply(this, arguments);
+    }
+    return memo[key];
+  };
+};
+
+$.once = function (fn) {
+  var done = false, result;
+  return function () {
+    if (!done) {
+      done = true;
+      result = fn.apply(this, arguments);
+    }
+    return result;
+  };
+};
+
+// debug function, wrap it in a function reporting its scope and arguments
+// particularly useful when combined with $.iterate
+$.trace = function (fn, log) {
+  log = log || (console) ? console.log : $.noop;
+  return function () {
+    var result = fn.apply(this, arguments);
+    log('(' + slice.call(arguments, 0).join(', ') + ') -> ', result);
+    return result;
+  };
+};
+
+$.traceBy = function (fn, via) {
+  return function () {
+    var result = fn.apply(this, arguments);
+    via(slice.call(arguments, 0), result);
+    return result;
+  };
+};
+
+// _.wrap, passes to a callback of form (fn, args..)
+// can log arguments and return, but should return fn.apply(args) to work unobtrusively
+$.wrap = function (fn, wrapper) {
+  return function () {
+    return wrapper.apply(this, [fn].concat(slice.call(arguments, 0)));
+  };
+};
+
+// unsure about these
+/*
+
+// guard a function by a condition function
+// returns a function that will only apply f(x) if cond(x) is true
+$.guard = function (fn, cond) {
+  return function (x) {
+    return (cond(x)) ? fn(x) : null;
+  };
+};
+
+// var guardedFibonacci = $.guard(fibonacci, lt(100));
+
+// $.either null guard a function, else return errorFn result
+// if errorFn is a logger, then curry it with the required message
+$.either = function (guardedFn, errorFn) {
+  return function (x) {
+    var result = guardedFn(x);
+    return (result === null) ? errorFn(x) : result;
+  };
+};
+
+// var errorMsg;
+// var cpuSafeFibonacci = $.either(guardedFibonacci, $.constant(errorMsg));
+// or
+// var cpuSafeFibonaci = $.either(guardedFibonacci, $.curry(console.log, errorMsg))
+*/
+
+//$.extend
+
+//TODO: throttle, debounce
+
+
+//TODO: clone, extend, deepEqual (although not in this section!, maybe get these from somewhere)
+
+
 
 // end - export
 

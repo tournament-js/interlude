@@ -91,23 +91,23 @@ test("comparison and equality", function (t) {
   // compare
   t.deepEqual([2,4,1,3].sort($.compare()), [2,4,1,3].sort(), "$.compare is default behavior");
   t.deepEqual([2,4,1,3].sort($.compare()), [1,2,3,4], "$.compare is default behavior asc");
-  t.deepEqual([2,4,1,3].sort($.compare('+')), [1,2,3,4], "$.compare is default behavior (asc specified)");
-  t.deepEqual([2,4,1,3].sort($.compare('-')), [4,3,2,1], "$.compare can change direction");
+  t.deepEqual([2,4,1,3].sort($.compare(+1)), [1,2,3,4], "$.compare is default behavior (asc specified)");
+  t.deepEqual([2,4,1,3].sort($.compare(-1)), [4,3,2,1], "$.compare can change direction");
 
   // comparing
   t.deepEqual([[1,3],[1,2],[1,5]].sort($.comparing(1)), [[1,2],[1,3],[1,5]], "comparing");
   t.deepEqual([{a:2},{a:1}].sort($.comparing('a')), [{a:1}, {a:2}], "comparing objs");
 
   var money = [{id: 1, money: 3}, {id: 2, money: 0}, {id: 3, money: 3}];
-  var res = money.sort($.comparing('money', '-', 'id', '-'));
+  var res = money.sort($.comparing('money', -1, 'id', -1));
   var resExp = [ { id: 3, money: 3 }, { id: 1, money: 3 }, { id: 2, money: 0 } ];
   t.deepEqual(res, resExp, "money max first, then id max first");
 
-  var res = money.sort($.comparing('money', '-', 'id', '+'));
+  var res = money.sort($.comparing('money', -1, 'id', +1));
   var resExp = [ { id: 1, money: 3 }, { id: 3, money: 3 }, { id: 2, money: 0 } ];
   t.deepEqual(res, resExp, "money max first, then id min first");
 
-  var res = money.sort($.comparing('money', '-', 'id'));
+  var res = money.sort($.comparing('money', -1, 'id'));
   var resExp = [ { id: 1, money: 3 }, { id: 3, money: 3 }, { id: 2, money: 0 } ];
   t.deepEqual(res, resExp, "money max first, then id min (default ('+'))");
 
@@ -173,9 +173,9 @@ test("list operations", function (t) {
   $.insert(xs, 5);
   t.equal(xs.length, 10+1, "insert modifies");
 
-  t.deepEqual($.insertBy($.compare('-'), [4,3,2,1], 2), [4,3,2,2,1], "insert desc mid");
-  t.deepEqual($.insertBy($.compare('-'), [4,3,2,1], 0), [4,3,2,1,0], "insert desc end");
-  t.deepEqual($.insertBy($.compare('-'), [4,3,2,1], 5), [5,4,3,2,1], "insert desc end");
+  t.deepEqual($.insertBy($.compare(-1), [4,3,2,1], 2), [4,3,2,2,1], "insert desc mid");
+  t.deepEqual($.insertBy($.compare(-1), [4,3,2,1], 0), [4,3,2,1,0], "insert desc end");
+  t.deepEqual($.insertBy($.compare(-1), [4,3,2,1], 5), [5,4,3,2,1], "insert desc end");
 
   var xs = [ [5,1], [4,2], [3,3] ];
   var res = $.insertBy($.comparing(1), xs.slice(), [8,2]);
