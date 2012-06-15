@@ -12,13 +12,13 @@
     "node": ">= 0.6.14"
   },
   "scripts": {
-    "test": "expresso"
+    "test": "tap ./test"
   },
   "dependencies": {
     "operators": "~0.1.1"
   },
   "devDependencies": {
-    "expresso": "~0.9.2"
+    "tap": "~0.2.5"
   },
   "optionalDependencies": {}
 }

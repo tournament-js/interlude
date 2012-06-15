@@ -601,7 +601,6 @@ $.difference = function (xs, ys) {
   return ys.reduce($.delete, xs.slice());
 };
 
-
 // end - export
 
 module.exports = $;

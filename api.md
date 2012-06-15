@@ -512,6 +512,8 @@ var notCoprime = $.seq2($.gcd, $.gt(1));
 var primes = $.nubBy(notCoprime, $.range(2, 11)); // [ 2, 3, 5, 7, 11 ]
 ````
 
+Here the definition of equality is *a and b have common factors*.
+
 ### $.group(xs) :: ys
 The group function takes an array and returns an array of arrays such that
 the flattened result is equal to `xs`.
