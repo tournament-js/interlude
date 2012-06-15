@@ -139,6 +139,33 @@ $.pluck = function (prop, xs) {
   return result;
 };
 
+// first/last + generalized
+$.first = function (xs) {
+  return xs[0];
+};
+
+$.last = function (xs) {
+  return xs[xs.length - 1];
+};
+
+$.firstBy = function (fn, xs) {
+  for (var i = 0, len = xs.length; i < len; i += 1) {
+    if (fn(xs[i])) {
+      return xs[i];
+    }
+  }
+  return undefined;
+};
+
+$.lastBy = function (fn, xs) {
+  for (var i = xs.length - 1; i >= 0; i -= 1) {
+    if (fn(xs[i])) {
+      return xs[i];
+    }
+  }
+  return undefined;
+};
+
 // ---------------------------------------------
 // Higher order looping
 // ---------------------------------------------
@@ -168,6 +195,44 @@ $.replicate = function (num, el) {
   return result;
 };
 
+// can act as zipWith, zipWith3, zipWith4...
+// zipper function must have the same number of arguments as there are lists
+// but beyond that, it's very dynamic
+$.zipWith = function () {
+  var fn = arguments[0]
+    , args = slice.call(arguments, 1)
+    , numLists = args.length
+    , results = []
+    , len = $.minimum($.pluck('length', args));
+
+  for (var i = 0; i < len; i += 1) {
+    var els = [];
+    for (var j = 0; j < numLists; j += 1) {
+      els.push(args[j][i]);
+    }
+    results.push(fn.apply(null, els));
+  }
+  return results;
+};
+
+// zip, zip3, zip4.. all in one!
+// inlining quite a bit faster: http://jsperf.com/inlinezip3
+// then not slicing helps too: http://jsperf.com/tosliceornottoslice5
+$.zip = function () {
+  var numLists = arguments.length
+    , results = []
+    , len = $.minimum($.pluck('length', arguments));
+
+  for (var i = 0; i < len; i += 1) {
+    var els = [];
+    for (var j = 0; j < numLists; j += 1) {
+      els.push(arguments[j][i]);
+    }
+    results.push(els);
+  }
+  return results;
+};
+
 $.iterate = function (times, init, fn) {
   var result = [init];
   for (var i = 1; i < times; i += 1) {
@@ -184,6 +249,7 @@ $.scan = function (xs, fn, initial) {
   }
   return result;
 };
+
 
 // these need only curried versions, as immediate use could simply access prototype on xs
 $.reduce = function (fn, initial) {
@@ -286,71 +352,6 @@ $.minimumBy = function (cmp, xs) {
     }
   }
   return min;
-};
-
-// first/last + generalized
-$.first = function (xs) {
-  return xs[0];
-};
-
-$.last = function (xs) {
-  return xs[xs.length - 1];
-};
-
-$.firstBy = function (fn, xs) {
-  for (var i = 0, len = xs.length; i < len; i += 1) {
-    if (fn(xs[i])) {
-      return xs[i];
-    }
-  }
-  return undefined;
-};
-
-$.lastBy = function (fn, xs) {
-  for (var i = xs.length - 1; i >= 0; i -= 1) {
-    if (fn(xs[i])) {
-      return xs[i];
-    }
-  }
-  return undefined;
-};
-
-// can act as zipWith, zipWith3, zipWith4...
-// zipper function must have the same number of arguments as there are lists
-// but beyond that, it's very dynamic
-$.zipWith = function () {
-  var fn = arguments[0]
-    , args = slice.call(arguments, 1)
-    , numLists = args.length
-    , results = []
-    , len = $.minimum($.pluck('length', args));
-
-  for (var i = 0; i < len; i += 1) {
-    var els = [];
-    for (var j = 0; j < numLists; j += 1) {
-      els.push(args[j][i]);
-    }
-    results.push(fn.apply(null, els));
-  }
-  return results;
-};
-
-// zip, zip3, zip4.. all in one!
-// inlining quite a bit faster: http://jsperf.com/inlinezip3
-// then not slicing helps too: http://jsperf.com/tosliceornottoslice5
-$.zip = function () {
-  var numLists = arguments.length
-    , results = []
-    , len = $.minimum($.pluck('length', arguments));
-
-  for (var i = 0; i < len; i += 1) {
-    var els = [];
-    for (var j = 0; j < numLists; j += 1) {
-      els.push(arguments[j][i]);
-    }
-    results.push(els);
-  }
-  return results;
 };
 
 // Modifying Array operations

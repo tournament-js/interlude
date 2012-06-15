@@ -196,10 +196,30 @@ extra function call per element.
 $.collect('length', [ [1,3,2],  [2], [1,2] ]); // [ 3, 1, 2 ]
 ````
 
+### $.first(xs) :: x
+Finds the first element of `xs`.
+
+### $.last(xs) :: x
+Finds the last element of `xs`.
+
+### $.firstBy(fn, xs) :: x
+Finds the first element `x` in `xs` for which `fn(x)` is true.
+
+### $.lastBy(fn, xs) :: x
+Finds the last element `x` in `xs` for which `fn(x)` is true.
+
+````javascript
+var ary = [{a:2}, {a:2, b:1}, {a:3}];
+var aEq2 = $.seq2($.get('a'), $.eq(2));
+$.firstBy(ary, aEq2); // {a:2}
+$.lastBy(ary, aEq2); // {a:2, b:1}
+````
+
 #### Accessors Note
-If a property is undefined on an element (or something is, in the middle
-of a deep property search), undefined is returned (as if you had written the lambda
-yourself).
+For all accessors; if a property is undefined on an element, undefined is returned.
+This also applies for `first`, `firstBy`, `last` and `lastBy` if the array is
+empty or no matches were found.
+
 To only get the defined values from a map of this style; filter by `$.neq()` -
 or `$.neq(/*undefined*/)` to be explicit about the inequality test.
 
@@ -231,6 +251,45 @@ Returns an `n` length Array with the element `x` at every position.
 $.replicate(5, 2); // [ 2, 2, 2, 2, 2 ]
 ````
 
+### $.zip(xs, ys [, zs [, ..]]) :: ls
+zip takes n arrays and returns an array of n length arrays by
+joining the input arrays on index.
+If any input array is short, excess elements of the longer arrays are discarded.
+
+````javascript
+$.zip([1,2,3], [2,2,2]); // [ [1,2], [2,2], [3,2] ]
+$.zip($.range(5), [1,2], [3,2,5]); // [ [1,1,3], [2,2,2] ]
+````
+
+### $.zipWith(fn, xs, ys [, zs [, ..]]) :: ls
+Same as `$.zip`, but applies each result array to `fn`,
+and collects these results rather.
+
+zipWith generalises zip by zipping with the function given as the first argument,
+instead of a collecting the elements.
+For example, $.zipWith($.plus2, xs, ys) is applied to two arrays to produce
+the array of corresponding sums.
+
+````javascript
+$.zipWith($.multiply, [2,2,2], [1,0,1], [1,2,3]); // [ 2, 0, 6 ]
+$.zipWith($.plus2, [1,1,1], $.range(5)); // [ 2, 3, 4 ]
+````
+
+zipWith can also be used for fusing two lists:
+
+````
+var vals = ["Peter", "Bam", "Jo"];
+var items = [{id:1}, {id:2}, {id:3}];
+var nameSetter = function (el, value) {
+  el.name = value;
+};
+$.zipWith(nameSetter, items, vals);
+items;
+// [ { id: 1, name: 'Peter' },
+//   { id: 2, name: 'Bam' },
+//   { id: 3, name: 'Jo' } ]
+````
+
 ### $.iterate(len, x, fn) :: results
 Returns a size `len` array of repeated applications of `fn` to `x`:
 
@@ -260,7 +319,6 @@ so 3rd and 4th arguments will always be undefined inside `fn`.
 [1,1,1,1].reduce($.plus2, 0); // 4
 $.scan([1,1,1,1], $.plus2, 0); // [ 0, 1, 2, 3, 4 ]
 ````
-
 
 ## Curried Prototype Method Accessors
 
@@ -375,27 +433,7 @@ being worked on (typical case) to help inlining a smaller specific function,
 it shows that very flexible higher order functions can be expressed very simply.
 
 
-## Array
-Many of these functions (somewhat remarkably) work on strings.
-
-### $.first(xs) :: x
-Finds the first element of `xs`.
-
-### $.last(xs) :: x
-Finds the last element of `xs`.
-
-### $.firstBy(fn, xs) :: x
-Finds the first element `x` in `xs` for which `fn(x)` is true.
-
-### $.lastBy(fn, xs) :: x
-Finds the last element `x` in `xs` for which `fn(x)` is true.
-
-````javascript
-var ary = [{a:2}, {a:2, b:1}, {a:3}];
-var aEq2 = $.seq2($.get('a'), $.eq(2));
-$.firstBy(ary, aEq2); // {a:2}
-$.lastBy(ary, aEq2); // {a:2, b:1}
-````
+## Set Operations
 
 ### $.maximum(xs) :: Number
 ### $.minimum(xs) :: Number
@@ -424,45 +462,6 @@ Note that unlike `$.maximum` which returns `-Infinity` in the case of an empty
 Array, `$.maximumBy` returns `undefined` as this is the only thing possible
 without knowing the structure of the elements in the array.
 Similarly for `$.minimum` and `$.minimumBy`.
-
-### $.zip(xs, ys [, zs [, ..]]) :: ls
-zip takes n arrays and returns an array of n length arrays by
-joining the input arrays on index.
-If any input array is short, excess elements of the longer arrays are discarded.
-
-````javascript
-$.zip([1,2,3], [2,2,2]); // [ [1,2], [2,2], [3,2] ]
-$.zip($.range(5), [1,2], [3,2,5]); // [ [1,1,3], [2,2,2] ]
-````
-
-### $.zipWith(fn, xs, ys [, zs [, ..]]) :: ls
-Same as `$.zip`, but applies each result array to `fn`,
-and collects these results rather.
-
-zipWith generalises zip by zipping with the function given as the first argument,
-instead of a collecting the elements.
-For example, $.zipWith($.plus2, xs, ys) is applied to two arrays to produce
-the array of corresponding sums.
-
-````javascript
-$.zipWith($.multiply, [2,2,2], [1,0,1], [1,2,3]); // [ 2, 0, 6 ]
-$.zipWith($.plus2, [1,1,1], $.range(5)); // [ 2, 3, 4 ]
-````
-
-zipWith can also be used for fusing two lists:
-
-````
-var vals = ["Peter", "Bam", "Jo"];
-var items = [{id:1}, {id:2}, {id:3}];
-var nameSetter = function (el, value) {
-  el.name = value;
-};
-$.zipWith(nameSetter, items, vals);
-items;
-// [ { id: 1, name: 'Peter' },
-//   { id: 2, name: 'Bam' },
-//   { id: 3, name: 'Jo' } ]
-````
 
 ### $.intersect(xs, ys) :: zs
 The 'intersect' function takes the intersection of two arrays.
@@ -626,21 +625,28 @@ passed in array. To return an independent result, modify a shallow copy instead:
 
 ````javascript
 var xs = [1,2,3,4];
-$.insert(xs, 2); // [1,2,2,3,4]
-xs; // [1,2,2,3,4]
+$.insert(xs, 2); // [ 1, 2, 2, 3, 4 ]
+xs; // [ 1, 2, 2, 3, 4 ]
 
 xs = [1,2,3,4]; // reset
-$.insert(xs.slice(), 2); // [1,2,2,3,4]
-xs; // [1,2,3,4]
+$.insert(xs.slice(), 2); // [ 1, 2, 2, 3, 4 ]
+xs; // [ 1, 2, 3, 4 ]
 ````
 
-#### NB2: delete deletes only the first
+#### NB2: delete/difference only removes one per request
 The delete functions only remove the first instance.
 To delete all, `Array.prototype.filter` is best suited:
 
 ````javascript
-[1,2,2,3,4].filter($.neq(2)); // [1,3,4]
-$.delete([1,2,2,3,4], 2); // [1,2,3,4]
+var exclusion = function (xs, ys) {
+  return xs.filter($.notElem(ys));
+};
+var xs = [1,2,2,3,4];
+exclusion(xs, [2,3]); // [ 1, 4 ]
+$.difference(xs, [2,3]); // [ 1, 2, 4 ]
+
+xs.filter($.neq(2)); // [ 1, 3, 4 ]
+$.delete(xs, 2); // [ 1, 2, 3, 4 ]
 ````
 
 ## Functional Extras
@@ -650,7 +656,14 @@ To come. Needs some more thought.
 how to split everything:
 
 - operators
-- zip + set + max + first/last + comparison/equality
-- common + math + accessors + looping (curried stuff)
+- comparison/equality + everything using them (set ops/max)
+- common + math + accessors(incl. first/last) + looping(zip/range/iterate/map/invoke..)
 - wrappers + seq
+
+conclusions:
+- keep compare/eq dependent functions in one libraray
+- zip/zipWith goes out of the haskell place with the HO loop stuff with range/replicate
+- last/first/lastBy/firstBy classified as accessors
+
+
 
