@@ -60,8 +60,8 @@ $.nubBy(notCoprime, $.range(2, 20));
 
 Read the short APIs of the re-exported modules:
 
-- operators : [API](https://github.com/clux/operators/blob/master/api.md) :
-[github page](https://github.com/clux/operators)
+- [operators](https://github.com/clux/operators) ([API](https://github.com/clux/operators/blob/master/api.md))
+- [subset](https://github.com/clux/subset) ([API](https://github.com/clux/subset/blob/master/api.md))
 
 Read the [core API](https://github.com/clux/interlude/blob/master/api.md)
 

@@ -29,3 +29,27 @@ $.sum($.range(1, 100, 2).map($.pow(2)));
 ````
 
 This final code is more efficient, but needs more explanation of what it does.
+
+## Tips and Tricks
+### Custom Comparators
+While `comparing`, `compare`, and `equality` are great at creating comparison functions and equality testers, it might still be useful to create curried functions that compare/filter based on such properties. Fortunately, this is quite easy to do with the tools available.
+
+````javascript
+// Check length >0
+var notEmpty = $.seq2($.get('length'), $.gt(0));
+[ [1], [], [2,4] ].filter(notEmpty); // [ [1], [2,4] ]
+
+// Check absolute value <=1 on all elements
+var withinUnitSquare = $.all($.seq2(Math.abs, $.lte(1)));
+[ [1,-1], [1,-2], [1,1,1] ].filter(withinUnitSquare); // [ [1,-1], [1,1,1] ]
+
+// Check euclidean distance of point <=1
+var withinUnitCircle = $.seq4($.map($.pow(2)), $.sum, Math.sqrt, $.lte(1));
+[ [1,-1], [0,0], [1], [1.1], [0,0.5,0.5], [0,0,0,1] ].filter(withinUnitCircle);
+// [ [0,0], [1], [0,0.5,0.5], [0,0,0,1] ]
+````
+
+While these examples are contrieved and the efficiency of these
+functions could be improved by knowing the dimension of the space
+being worked on (typical case) to help inlining a smaller specific function,
+it shows that very flexible higher order functions can be expressed very simply.
