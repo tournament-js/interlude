@@ -555,7 +555,7 @@ $.once = function (fn) {
 // debug function, wrap it in a function reporting its scope and arguments
 // particularly useful when combined with $.iterate
 $.trace = function (fn, log) {
-  log = log || (console) ? console.log : $.noop;
+  log = log || console.log;
   return function () {
     var result = fn.apply(this, arguments);
     log('(' + slice.call(arguments, 0).join(', ') + ') -> ', result);

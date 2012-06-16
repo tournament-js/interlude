@@ -638,11 +638,8 @@ The delete functions only remove the first instance.
 To delete all, `Array.prototype.filter` is best suited:
 
 ````javascript
-var exclusion = function (xs, ys) {
-  return xs.filter($.notElem(ys));
-};
 var xs = [1,2,2,3,4];
-exclusion(xs, [2,3]); // [ 1, 4 ]
+xs.filter($.notElem([2,3])); // [ 1, 4 ]
 $.difference(xs, [2,3]); // [ 1, 2, 4 ]
 
 xs.filter($.neq(2)); // [ 1, 3, 4 ]
