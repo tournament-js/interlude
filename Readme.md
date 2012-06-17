@@ -58,12 +58,12 @@ $.nubBy(notCoprime, $.range(2, 20));
 // [ 2, 3, 5, 7, 11, 13, 17, 19 ]
 ````
 
-Read the short APIs of the re-exported modules:
+Interlude consist entirely of re-exported modules. Read their APIs: 
 
 - [operators](https://github.com/clux/operators) ([API](https://github.com/clux/operators/blob/master/api.md))
+- [autonomy](https://github.com/clux/autonomy) ([API](https://github.com/clux/autonomy/blob/master/api.md))
 - [subset](https://github.com/clux/subset) ([API](https://github.com/clux/subset/blob/master/api.md))
-
-Read the [core API](https://github.com/clux/interlude/blob/master/api.md)
+- [wrappers](https://github.com/clux/wrappers) ([API](https://github.com/clux/wrappers/blob/master/api.md))
 
 ## Installation
 

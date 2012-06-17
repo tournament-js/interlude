@@ -15,8 +15,10 @@
     "test": "tap ./test"
   },
   "dependencies": {
-    "operators": "~0.1.2",
-    "subset": "~0.1.0"
+    "autonomy": "~0.1.0",
+    "wrappers": "~0.0.1",
+    "subset": "~0.1.0",
+    "xtend": "~1.0.3"
   },
   "devDependencies": {
     "tap": "~0.2.5"

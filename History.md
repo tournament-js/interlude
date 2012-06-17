@@ -1,18 +1,22 @@
 0.4.0 / TODO
 ==================
-  * wrappers
-  * move list stuff to own module
+  * more/better wrappers
   * improve DOCS browsability and just api in general
-  DONE:
+
+0.4.0 / 2012-06-17
+==================
   * use latest operators, 0.3 missed some extras
-  * trace/traceBy/wrap/once/memoize
   * comparing/compare direction parameter is now the factor +1/-1 with +1 omittable
+  * set operations + comparison/equality generalizations moved to `subset` module
+  * everything else (must haves) moved into `origin` module, which re-exports operators.
+  * trace/traceBy/wrap/once/memoize initial wrappers included via `wrappers` module
+  * module basically just a re-export
 
 
 0.3.0 / 2012-06-15
 ==================
   * `operators` moved to own module (which now is bigger and better)
-  * renamed `collect` to `pluck` to conserve conventions
+  * renamed `collect` to `pluck` to conserve (at least some) conventions
   * $.equality, $.comparing $.compare added
   * removed awful setters
   * delete/insert/deleteBy/insertBy now all modify input (insertBy didn't)
