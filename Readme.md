@@ -24,7 +24,7 @@ $.range(5).map($.pow(2));
 // [ 1, 4, 9, 16, 25 ]
 
 var nested = [ [1,3,2], [2,2], [1,4,2,3] ];
-$.collect('length', nested);
+$.pluck('length', nested);
 // [ 3, 2, 4 ]
 
 nested.filter($.all($.eq(2)));
@@ -58,7 +58,7 @@ $.nubBy(notCoprime, $.range(2, 20));
 // [ 2, 3, 5, 7, 11, 13, 17, 19 ]
 ````
 
-Interlude consist entirely of re-exported modules. Read their APIs: 
+Interlude consist entirely of re-exported modules. Read their APIs:
 
 - [operators](https://github.com/clux/operators) ([API](https://github.com/clux/operators/blob/master/api.md))
 - [autonomy](https://github.com/clux/autonomy) ([API](https://github.com/clux/autonomy/blob/master/api.md))
