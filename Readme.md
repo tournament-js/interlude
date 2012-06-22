@@ -60,13 +60,11 @@ $.nubBy(notCoprime, $.range(2, 20));
 
 Interlude consist entirely of re-exported modules. Read their APIs:
 
-````
 [interlude](https://github.com/clux/interlude)
  ├──┬ [autonomy](https://github.com/clux/autonomy) ([API](https://github.com/clux/autonomy/blob/master/api.md))
  │  └─── [operators](https://github.com/clux/operators) ([API](https://github.com/clux/operators/blob/master/api.md))
  ├─── [subset](https://github.com/clux/subset) ([API](https://github.com/clux/subset/blob/master/api.md))
  └─── [wrappers](https://github.com/clux/wrappers) ([API](https://github.com/clux/wrappers/blob/master/api.md))
-````
 
 ## Installation
 
