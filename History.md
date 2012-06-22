@@ -1,7 +1,10 @@
-0.4.0 / TODO
+FUTURE / TODO
 ==================
-  * more/better wrappers
   * improve DOCS browsability and just api in general
+
+0.5.0 / 2012-06-22
+==================
+  * update wrappers to 0.1.0 (now close to done, has a lot more)
 
 0.4.0 / 2012-06-17
 ==================
