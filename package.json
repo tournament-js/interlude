@@ -11,17 +11,29 @@
   "engines": {
     "node": ">= 0.6.14"
   },
+  "keywords": [
+    "utility",
+    "set",
+    "functional",
+    "haskell",
+    "partial",
+    "curry",
+    "zipWith",
+    "FP",
+    "ES5"
+  ],
   "scripts": {
-    "test": "tap ./test"
+    "test": "npm test autonomy wrappers subset"
   },
   "dependencies": {
     "autonomy": "~0.1.0",
-    "wrappers": "~0.0.1",
+    "wrappers": "~0.1.0",
     "subset": "~0.1.0",
     "xtend": "~1.0.3"
   },
   "devDependencies": {
     "tap": "~0.2.5"
   },
-  "optionalDependencies": {}
+  "optionalDependencies": {},
+  "license": "MIT"
 }
