@@ -1,10 +1,7 @@
 var $ = require('autonomy');
 
-
-//TODO: clone, extend, deepEqual? 
-//in own module? using xtend for now..
-
-$.extend = require('xtend');
-$.extend($, require('wrappers'), require('subset'));
+$.extend($, require('operators'));
+$.extend($, require('wrappers'));
+$.extend($, require('subset'));
 
 module.exports = $;

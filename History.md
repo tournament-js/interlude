@@ -1,5 +1,11 @@
 FUTURE / TODO
 ==================
+  * make a joint documentation/teaser site
+
+0.5.1 / 2012-06-30
+==================
+  * include new (v0.2.0) autonomy which comes without operators + pow/log but with extend
+  * operators included directly (now comes with pow/log + pow2/log2)
   * improve DOCS browsability and just api in general
 
 0.5.0 / 2012-06-22

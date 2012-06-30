@@ -23,13 +23,13 @@
     "ES5"
   ],
   "scripts": {
-    "test": "npm test autonomy wrappers subset"
+    "test": "npm test autonomy wrappers subset operators && tap ./test"
   },
   "dependencies": {
-    "autonomy": "~0.1.0",
+    "autonomy": "~0.2.0",
     "wrappers": "~0.1.0",
     "subset": "~0.1.0",
-    "xtend": "~1.0.3"
+    "operators": "~0.1.3"
   },
   "devDependencies": {
     "tap": "~0.2.5"

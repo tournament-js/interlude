@@ -62,16 +62,20 @@ Interlude consist entirely of re-exported modules structured as follows:
 
 ````
 interlude
-├──┬ autonomy
-│  └─── operators
+├─── operators
+├─── autonomy
 ├─── subset
 └─── wrappers
 ````
 
-Check these out and read their short API's here:
+These modules are of course requirable by themselves, and we encourage you to require them directly.The submodules are small (~300 lines each) so by requiring one of them, you are less likely to have to search around to wonder why you included this [monolithic thing](http://underscorejs.org/) when you just wanted a few things from the file.
 
-- [autonomy](https://github.com/clux/autonomy) ([API](https://github.com/clux/autonomy/blob/master/api.md))
+Minimizing dependencies make it easier for people to reason about your code. That said, this module is here when/if you want it all under the same namespace.
+
+In the mean time, their short and independent API's are available here:
+
 - [operators](https://github.com/clux/operators) ([API](https://github.com/clux/operators/blob/master/api.md))
+- [autonomy](https://github.com/clux/autonomy) ([API](https://github.com/clux/autonomy/blob/master/api.md))
 - [subset](https://github.com/clux/subset) ([API](https://github.com/clux/subset/blob/master/api.md))
 - [wrappers](https://github.com/clux/wrappers) ([API](https://github.com/clux/wrappers/blob/master/api.md))
 
