@@ -68,7 +68,7 @@ interlude
 └─── wrappers
 ````
 
-These modules are of course requirable by themselves, and we encourage you to require them directly.The submodules are small (~300 lines each) so by requiring one of them, you are less likely to have to search around to wonder why you included this [monolithic thing](http://underscorejs.org/) when you just wanted a few things from the file.
+These modules are of course requirable by themselves, and we encourage you to require them directly.The submodules are small (<300 lines each) so by requiring one of them, you are less likely to have to search around to wonder why you included this [monolithic thing](http://underscorejs.org/) when you just wanted a few things from the module.
 
 Minimizing dependencies make it easier for people to reason about your code. That said, this module is here when/if you want it all under the same namespace.
 
