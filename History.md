@@ -2,6 +2,10 @@ FUTURE / TODO
 ==================
   * make a joint documentation/teaser site
 
+0.6.0 / 2012-07-03
+==================
+  * wrappers updated to 0.2.0 removing `either` and `guard`
+
 0.5.1 / 2012-06-30
 ==================
   * include new (v0.2.0) autonomy which comes without operators + pow/log but with extend
