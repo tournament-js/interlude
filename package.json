@@ -9,7 +9,7 @@
   },
   "main": "interlude.js",
   "engines": {
-    "node": ">= 0.6.14"
+    "node": "*"
   },
   "keywords": [
     "utility",
@@ -26,7 +26,7 @@
     "test": "npm test autonomy wrappers subset operators && tap ./test"
   },
   "dependencies": {
-    "autonomy": "~0.2.0",
+    "autonomy": "~0.3.0",
     "wrappers": "~0.2.0",
     "subset": "~0.1.0",
     "operators": "~0.1.3"

@@ -2,6 +2,12 @@ FUTURE / TODO
 ==================
   * make a joint documentation/teaser site
 
+
+0.7.0 / 2012-07-04
+==================
+  * autonomy updated to 0.3.0 changing `scan` argument order
+  * allow use on any node version
+
 0.6.0 / 2012-07-03
 ==================
   * wrappers updated to 0.2.0 removing `either` and `guard`

@@ -79,6 +79,8 @@ In the mean time, their short and independent API's are available here:
 - [subset](https://github.com/clux/subset) ([API](https://github.com/clux/subset/blob/master/api.md))
 - [wrappers](https://github.com/clux/wrappers) ([API](https://github.com/clux/wrappers/blob/master/api.md))
 
+Additionally, the strict and super-lightweight type testing module [typr](https://github.com/clux/typr) complements this selection of modules nicely if you're into that sort of thing.
+
 ## Installation
 
 ````bash
