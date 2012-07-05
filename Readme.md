@@ -14,7 +14,7 @@ Attach it to the short variable of choice:
 var $ = require('interlude');
 ````
 
-Then spice up your JavaScript with Functional Programming;
+Then spice up your JavaScript with some functional-style programming;
 
 ```javascript
 [1,3,2,6,5,4].filter($.gt(4));
@@ -32,6 +32,9 @@ nested.filter($.all($.eq(2)));
 
 nested.sort($.comparing('length'));
 // [ [ 2 ], [ 1, 3, 2 ], [ 1, 4, 2, 3 ] ]
+
+var pairs = [['woo', 3], ['wee', 1], ['boo', 2]];
+pairs.sort($.comparing(1)).map($.first); // [ 'wee', 'boo', 'woo' ]
 
 $.zipWith($.plus3, [1,1,1,1,1], $.range(5), [1,0,0]);
 // [ 3, 3, 4 ]
