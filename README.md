@@ -89,7 +89,7 @@ Regardless, you should read their short and independent APIs:
 Additionally, two extra modules (which were not included in interlude due to their smaller likelihood of use) are perfect fits, does not overlap in API, and is highly recommended *when needed*. Read their short APIs too:
 
 - [wrappers](https://github.com/clux/wrappers) ([API](https://github.com/clux/wrappers/blob/master/api.md))
-- [typr](https://github.com/clux/typr) ([API](https://github.com/clux/typr/master/api.md))
+- [typr](https://github.com/clux/typr) ([API](https://github.com/clux/typr/blob/master/api.md))
 
 ## Installation
 
