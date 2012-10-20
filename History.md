@@ -3,6 +3,7 @@
   * interlude is now a stable front for autonomy, subset and operators
   * `has`, `seq2`, `seq3`, `seq4`, `getDeep` removed from autonomy
   * `replicate` is now array safe
+  * `get` is now variadic and assumes the role of `getDeep`
   * `wrappers` excluded from exports because:
     - less stable API
     - less likelihood of use

@@ -23,7 +23,7 @@
     "test": "npm test autonomy subset operators && tap ./test"
   },
   "dependencies": {
-    "autonomy": "~0.4.0",
+    "autonomy": "~0.4.2",
     "subset": "~0.1.1",
     "operators": "~0.1.3"
   },
