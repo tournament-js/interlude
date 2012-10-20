@@ -1,7 +1,11 @@
-FUTURE / TODO
+1.0.0 / 2012-10-20
 ==================
-  * make a joint documentation/teaser site
-
+  * interlude is now a stable front for autonomy, subset and operators
+  * `has`, `seq2`, `seq3`, `seq4`, `getDeep` `replicate` removed from autonomy
+  * `wrappers` excluded from exports because:
+    - less stable API
+    - less likelihood of use
+  * `subset` includes `isSubsetOf` (retroactively available to previous versions)
 
 0.7.0 / 2012-07-04
 ==================

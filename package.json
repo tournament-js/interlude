@@ -8,9 +8,6 @@
     "url": "git://github.com/clux/interlude.git"
   },
   "main": "interlude.js",
-  "engines": {
-    "node": "*"
-  },
   "keywords": [
     "utility",
     "set",
@@ -23,17 +20,15 @@
     "ES5"
   ],
   "scripts": {
-    "test": "npm test autonomy wrappers subset operators && tap ./test"
+    "test": "npm test autonomy subset operators && tap ./test"
   },
   "dependencies": {
-    "autonomy": "~0.3.0",
-    "wrappers": "~0.2.0",
-    "subset": "~0.1.0",
+    "autonomy": "~0.4.0",
+    "subset": "~0.1.1",
     "operators": "~0.1.3"
   },
   "devDependencies": {
-    "tap": "~0.2.5"
+    "tap": "~0.3.1"
   },
-  "optionalDependencies": {},
   "license": "MIT"
 }
