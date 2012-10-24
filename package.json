@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "autonomy": "~0.4.2",
-    "subset": "~0.1.1",
+    "subset": "~0.1.2",
     "operators": "~0.1.3"
   },
   "devDependencies": {

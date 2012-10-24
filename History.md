@@ -1,3 +1,7 @@
+1.0.0 / 2012-10-24
+==================
+  * retroactive inclusion of an overloaded version `$.compare` from subset
+
 1.0.0 / 2012-10-20
 ==================
   * interlude is now a stable front for autonomy, subset and operators
