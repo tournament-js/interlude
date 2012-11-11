@@ -1,3 +1,7 @@
+1.0.1 / 2012-11-11
+==================
+  * `$()` now a shortcut for deprecated `$.seq`
+
 1.0.0 / 2012-10-24
 ==================
   * retroactive inclusion of an overloaded version `$.compare` from subset

@@ -60,7 +60,7 @@ $.iterate(6, [1], pascalNext);
 //   [ 1, 5, 10, 10, 5, 1 ] ]
 
 // Prime numbers
-var notCoprime = $.seq($.gcd, $.gt(1));
+var notCoprime = $($.gcd, $.gt(1));
 $.nubBy(notCoprime, $.range(2, 20));
 // [ 2, 3, 5, 7, 11, 13, 17, 19 ]
 ```

@@ -46,15 +46,15 @@ A simple way to make operators on existing or computable properties:
 
 ```javascript
 // Check length >0
-var lengthOne = $.seq($.get('length'), $.eq(1));
+var lengthOne = $($.get('length'), $.eq(1));
 [ [1], [], [2,4] ].filter(lengthOne); // [ [1] ]
 
 // Check absolute value <=1 on all elements
-var withinUnitSquare = $.all($.seq(Math.abs, $.lte(1)));
+var withinUnitSquare = $.all($(Math.abs, $.lte(1)));
 [ [1,-1], [1,-2], [1,1,1] ].filter(withinUnitSquare); // [ [1,-1], [1,1,1] ]
 
 // Check euclidean distance of point <=1
-var withinUnitCircle = $.seq($.map($.pow(2)), $.sum, Math.sqrt, $.lte(1));
+var withinUnitCircle = $($.map($.pow(2)), $.sum, Math.sqrt, $.lte(1));
 [ [1,-1], [0,0], [1], [1.1], [0,0.5,0.5], [0,0,0,1] ].filter(withinUnitCircle);
 // [ [0,0], [1], [0,0.5,0.5], [0,0,0,1] ]
 ```

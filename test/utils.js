@@ -39,7 +39,7 @@ test("readme", function (t) {
   t.equal(pascal.length, 6, "got exactly the number of rows we asked for in pascal");
 
   // Prime numbers
-  var notCoprime = $.seq($.gcd, $.gt(1));
+  var notCoprime = $($.gcd, $.gt(1));
   var primes = $.nubBy(notCoprime, $.range(2, 20));
   t.deepEqual(primes, [ 2, 3, 5, 7, 11, 13, 17, 19 ], "primes <= 20");
 
