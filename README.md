@@ -86,7 +86,7 @@ Regardless, you should read their short and independent APIs:
 - [autonomy](https://github.com/clux/autonomy) ([API](https://github.com/clux/autonomy/blob/master/api.md))
 - [subset](https://github.com/clux/subset) ([API](https://github.com/clux/subset/blob/master/api.md))
 
-Additionally, two extra modules (which were not included in interlude due to their smaller likelihood of use) are perfect fits, does not overlap in API, and is highly recommended *when needed*. Read their short APIs too:
+Additionally, two extra modules (which were not included in interlude due to their smaller likelihood of use) are perfect fits, does not overlap in API, and are highly recommended *when needed*. Read their short APIs too:
 
 - [wrappers](https://github.com/clux/wrappers) ([API](https://github.com/clux/wrappers/blob/master/api.md))
 - [typr](https://github.com/clux/typr) ([API](https://github.com/clux/typr/blob/master/api.md))
