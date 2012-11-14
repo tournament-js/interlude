@@ -1,3 +1,8 @@
+1.0.2 / 2012-11-12
+==================
+  * extend a blank copy of `seq` rather than require result of `autonomy`.
+  (Was overwriting the cached require results of autonomy in linked installs)
+
 1.0.1 / 2012-11-11
 ==================
   * `$()` now a shortcut for deprecated `$.seq`
