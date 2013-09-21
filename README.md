@@ -1,4 +1,5 @@
-# Interlude [![Build Status](https://secure.travis-ci.org/clux/interlude.png)](http://travis-ci.org/clux/interlude)
+# Interlude [![Build Status](https://secure.travis-ci.org/clux/interlude.png)](http://travis-ci.org/clux/interlude) [![Dependency Status](https://david-dm.org/clux/interlude.png)](https://david-dm.org/clux/interlude)
+
 Interlude is ES5 JavaScript with Haskell inspired enhancements.
 It's aims to simplify and abstract common patterns by joining
 common higher order functions with the ES5 arsenal to allow a
