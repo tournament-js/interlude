@@ -1,3 +1,7 @@
+1.0.3 / 2014-07-25
+==================
+  * Documentation and coverage release
+
 1.0.2 / 2012-11-12
 ==================
   * extend a blank copy of `seq` rather than require result of `autonomy`.
