@@ -1,8 +1,6 @@
-var tap = require('tap')
-  , test = tap.test
-  , $ = require('../');
+var $ = require(process.env.INTERLUDE_COV ? '../interlude-cov.js' : '../');
 
-test("readme", function (t) {
+exports.readme = function (t) {
   t.deepEqual([1,3,2,6,5,4].filter($.gt(4)), [ 6, 5 ], "filter gt 4");
 
   t.deepEqual($.range(5).map($.pow(2)), [ 1, 4, 9, 16, 25 ], "[1..5] map pow 2");
@@ -43,5 +41,5 @@ test("readme", function (t) {
   var primes = $.nubBy(notCoprime, $.range(2, 20));
   t.deepEqual(primes, [ 2, 3, 5, 7, 11, 13, 17, 19 ], "primes <= 20");
 
-  t.end();
-});
+  t.done();
+};

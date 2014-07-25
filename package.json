@@ -20,15 +20,20 @@
     "ES5"
   ],
   "scripts": {
-    "test": "npm test autonomy subset operators && tap ./test"
+    "testDependents": "npm test autonomy && npm test subset && npm test operators",
+    "test": "npm run testDependents && nodeunit test/*.js --reporter=verbose",
+    "coverage": "jscoverage interlude.js && INTERLUDE_COV=1 nodeunit --reporter=lcov test",
+    "coveralls": "npm run coverage | coveralls"
   },
   "dependencies": {
     "autonomy": "~0.5.0",
-    "subset": "~0.1.3",
-    "operators": "~0.1.3"
+    "operators": "~0.1.3",
+    "subset": "~0.1.3"
   },
   "devDependencies": {
-    "tap": "~0.4.4"
+    "coveralls": "^2.11.1",
+    "jscoverage": "^0.5.5",
+    "nodeunit": "^0.9.0"
   },
   "license": "MIT"
 }
