@@ -22,7 +22,7 @@
   ],
   "scripts": {
     "testDependents": "npm test autonomy && npm test subset && npm test operators",
-    "test": "npm run testDependents && nodeunit test/*.js --reporter=verbose",
+    "test": "nodeunit test/*.js --reporter=verbose",
     "coverage": "jscoverage interlude.js && INTERLUDE_COV=1 nodeunit --reporter=lcov test",
     "coveralls": "npm run coverage | coveralls"
   },
