@@ -3,6 +3,7 @@
   "name": "interlude",
   "description": "Functional JavaScript library",
   "version": "1.0.2",
+  "stability": "stable",
   "repository": {
     "type": "git",
     "url": "clux/interlude"

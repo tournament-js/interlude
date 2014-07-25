@@ -1,12 +1,14 @@
-# Interlude [![Build Status](https://secure.travis-ci.org/clux/interlude.png)](http://travis-ci.org/clux/interlude) [![Dependency Status](https://david-dm.org/clux/interlude.png)](https://david-dm.org/clux/interlude)
+# Interlude 
+[![npm status](http://img.shields.io/npm/v/interlude.svg)](https://www.npmjs.org/package/interlude)
+[![build status](https://secure.travis-ci.org/clux/interlude.svg)](http://travis-ci.org/clux/interlude)
+[![dependency status](https://david-dm.org/clux/interlude.svg)](https://david-dm.org/clux/interlude)
+[![coverage status](http://img.shields.io/coveralls/clux/interlude.svg)](https://coveralls.io/r/clux/interlude)
+[![stable](http://img.shields.io/badge/stability-stable-74C614.svg)](http://nodejs.org/api/documentation.html#documentation_stability_index)
 
 Interlude is ES5 JavaScript with Haskell inspired enhancements.
-It's aims to simplify and abstract common patterns by joining
-common higher order functions with the ES5 arsenal to allow a
-more declarative style with negligible efficiency changes.
+It's aims to simplify and abstract common patterns by joining common higher order functions with the ES5 arsenal to allow a more declarative style with negligible efficiency changes.
 
-It does not simply alias ES5 methods, and it does not touch prototypes.
-*It curries*.
+It does not simply alias ES5 methods, and it does not touch prototypes. *It curries*.
 
 ## Usage
 Attach it to the short variable of choice:
