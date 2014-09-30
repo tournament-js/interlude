@@ -1,3 +1,9 @@
+1.1.0 / 2014-09-30
+==================
+  * Bump autonomy to 1.0.0:
+    - adds `copy`
+    - `replicate` is now object safe
+
 1.0.3 / 2014-07-25
 ==================
   * Documentation and coverage release
