@@ -3,7 +3,6 @@
   "name": "interlude",
   "description": "Functional JavaScript library",
   "version": "1.1.0",
-  "stability": "stable",
   "repository": {
     "type": "git",
     "url": "clux/interlude"
@@ -21,10 +20,8 @@
     "ES5"
   ],
   "scripts": {
-    "testDependents": "npm test autonomy && npm test subset && npm test operators",
     "test": "nodeunit test/*.js --reporter=verbose",
-    "coverage": "jscoverage interlude.js && INTERLUDE_COV=1 nodeunit --reporter=lcov test",
-    "coveralls": "npm run coverage | coveralls"
+    "coverage": "jscoverage interlude.js && INTERLUDE_COV=1 nodeunit --reporter=lcov test"
   },
   "dependencies": {
     "autonomy": "^1.0.0",
@@ -32,7 +29,6 @@
     "subset": "^0.1.6"
   },
   "devDependencies": {
-    "coveralls": "^2.11.1",
     "jscoverage": "^0.5.5",
     "nodeunit": "^0.9.0"
   },
