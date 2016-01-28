@@ -1,3 +1,15 @@
+2.0.0 / 2016-01-28?
+==================
+  * ES6 rewrite
+  * Bump autonomy to 2.0.0 (module reduced in size and scope for ES6)
+  * Bump operators to 1.0.0 (module reduced in size and scope for ES6)
+  * Bump subset to 1.0.0 (module reduced in size and scope for ES6)
+  * TL;DR - a couple of functions removed from each library:
+    - infrequently used stuff
+    - badly optimizable variadic stuff using `arguments`
+    - some variadic functions split into numbered versions (`zip2`, `zip3`, ..)
+    - stuff obsoleted by ES6
+
 1.1.1 / 2015-11-15
 ==================
   * Added `.npmignore`
