@@ -17,20 +17,21 @@
     "curry",
     "zipWith",
     "FP",
-    "ES5"
+    "ES6"
   ],
   "scripts": {
-    "test": "nodeunit test/*.js --reporter=verbose",
-    "coverage": "jscoverage interlude.js && INTERLUDE_COV=1 nodeunit --reporter=lcov test"
+    "test": "bndg test/*.js",
+    "precoverage": "istanbul cover bndg test/*.js",
+    "coverage": "cat coverage/lcov.info && rm -rf coverage"
   },
   "dependencies": {
-    "autonomy": "^1.0.0",
-    "operators": "^0.1.6",
-    "subset": "^0.1.6"
+    "autonomy": "^2.0.0",
+    "operators": "^1.0.0",
+    "subset": "^1.0.0"
   },
   "devDependencies": {
-    "jscoverage": "^0.5.5",
-    "nodeunit": "^0.9.0"
+    "bandage": "^0.4.2",
+    "istanbul": "^0.4.2"
   },
   "license": "MIT"
 }
