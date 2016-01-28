@@ -31,6 +31,6 @@ test('readme', function *(t) {
 
   // Prime numbers
   var notCoprime = (x, y) => $.gcd(x, y) > 1;
-  var primes = $.uniqueBy(notCoprime, $.range(2, 20));
+  var primes = $.uniqueBy(notCoprime, $.interval(2, 20));
   t.eq(primes, [ 2, 3, 5, 7, 11, 13, 17, 19 ], 'primes <= 20');
 });

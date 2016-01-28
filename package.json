@@ -25,9 +25,9 @@
     "coverage": "cat coverage/lcov.info && rm -rf coverage"
   },
   "dependencies": {
-    "autonomy": "^2.0.0",
+    "autonomy": "^2.1.0",
     "operators": "^1.0.0",
-    "subset": "^1.0.0"
+    "subset": "^1.1.0"
   },
   "devDependencies": {
     "bandage": "^0.4.2",

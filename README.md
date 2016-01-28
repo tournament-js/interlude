@@ -11,7 +11,7 @@ It's aims to simplify and abstract common patterns by providing a set of common 
 Use it with qualified imports with the yet unfinished module `import` syntax or attach it to the short variable of choice. For selling points, here's how it will look with ES7 modules.
 
 ```js
-import { range, pow, times, all, eq, comparing, zipWith, zipWith3, iterate, gcd, uniqueBy, iterate } from 'interlude'
+import { range, pow, times, all, eq, comparing, zipWith, zipWith3, iterate, gcd, uniqueBy, iterate, interval } from 'interlude'
 
 range(5).map(pow(2));
 // [ 1, 4, 9, 16, 25 ]
@@ -44,7 +44,7 @@ iterate(6, [1], pascalNext);
 
 // Prime numbers
 var notCoprime = (x, y) => gcd(x, y) > 1;
-uniqueBy(notCoprime, range(2, 20));
+uniqueBy(notCoprime, interval(2, 20));
 // [ 2, 3, 5, 7, 11, 13, 17, 19 ]
 ```
 
