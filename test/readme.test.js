@@ -1,4 +1,5 @@
 var $ = require('..');
+var test = require('bandage');
 
 test('readme', function *(t) {
   t.eq($.range(5).map($.pow(2)), [ 1, 4, 9, 16, 25 ], '[1..5] map pow 2');
