@@ -1,5 +1,5 @@
 module.exports = Object.assign({},
-  requre('autonomy'),
-  requre('operators'),
+  require('autonomy'),
+  require('operators'),
   require('subset')
 );
