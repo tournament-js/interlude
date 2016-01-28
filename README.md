@@ -50,12 +50,12 @@ uniqueBy(notCoprime, interval(2, 20));
 
 Interlude is merely a stable front for three re-exported modules:
 
-```
-interlude
-├─── [autonomy](https://github.com/clux/autonomy) ([API](https://github.com/clux/autonomy/blob/master/api.md))
-├─── [subset](https://github.com/clux/subset) ([API](https://github.com/clux/subset/blob/master/api.md))
-└─── [operators](https://github.com/clux/operators) ([API](https://github.com/clux/operators/blob/master/api.md))
-```
+
+- interlude
+- ├─── [autonomy](https://github.com/clux/autonomy) ([API](https://github.com/clux/autonomy/blob/master/api.md))
+- ├─── [subset](https://github.com/clux/subset) ([API](https://github.com/clux/subset/blob/master/api.md))
+- └─── [operators](https://github.com/clux/operators) ([API](https://github.com/clux/operators/blob/master/api.md))
+
 
 These modules are of course requirable by themselves, and we encourage you to require them directly. The submodules are small (<150 lines each) and focused.
 
